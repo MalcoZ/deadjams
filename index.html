@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tape Room — Grateful Dead shows from the Internet Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#ebe7f1; --surface:#f7f5fa; --surface2:#e2dcec; --ink:#231c36; --muted:#665e80;
+  --line:#d3cce0; --accent:#a85a06; --accent-soft:#f3dfc2; --accent-ink:#fff; --teal:#1d7a6e;
+  --shadow:0 18px 40px -24px rgba(35,28,54,.35);
+  --font:"Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --player-h:88px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme: dark;
+    --bg:#1c172e; --surface:#251f3d; --surface2:#2f284c; --ink:#efe9f8; --muted:#a59dbf;
+    --line:#3b3359; --accent:#f2b33d; --accent-soft:#40331f; --accent-ink:#1c172e; --teal:#61c7b8;
+    --shadow:0 18px 40px -20px rgba(0,0,0,.6);
+  }
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;
+  font-optical-sizing:auto;-webkit-font-smoothing:antialiased;
+  padding-bottom:calc(var(--player-h) + env(safe-area-inset-bottom,0px));}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Header */
+.top{display:flex;align-items:center;gap:20px;padding:calc(18px + env(safe-area-inset-top,0px)) 28px 10px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:12px;margin-right:auto}
+.brand h1{margin:0;font-size:28px;font-weight:750;letter-spacing:-.02em;font-variation-settings:"opsz" 96}
+.brand p{margin:0;color:var(--muted);font-size:14px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.search{position:relative}
+.search input{width:min(300px,70vw);padding:9px 14px 9px 36px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--surface);padding:9px 15px;border-radius:999px;font-weight:550;font-size:15px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.06)}
+
+/* Year dial — the signature element */
+.dial{position:relative;padding:4px 0 6px;user-select:none}
+.dial::before,.dial::after{content:"";position:absolute;top:0;bottom:0;width:48px;z-index:2;pointer-events:none}
+.dial::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.dial::after{right:0;background:linear-gradient(-90deg,var(--bg),transparent)}
+.dial-track{display:flex;align-items:flex-end;gap:0;overflow-x:auto;scroll-behavior:smooth;padding:0 calc(50vw - 40px);scrollbar-width:none;height:118px}
+.dial-track::-webkit-scrollbar{display:none}
+.yr{flex:0 0 auto;width:80px;background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;padding:0 0 4px;color:var(--muted)}
+.yr .lbl{font-weight:500;font-size:19px;letter-spacing:-.01em;transition:font-size .25s ease,color .2s}
+.yr .ticks{display:flex;gap:7px;align-items:flex-end;height:30px}
+.yr .ticks i{display:block;width:2px;height:10px;background:var(--line);border-radius:2px}
+.yr .ticks i:nth-child(3){height:18px;background:var(--muted)}
+.yr.decade .lbl{color:var(--ink)}
+.yr:hover .lbl{color:var(--ink)}
+.yr[aria-pressed="true"] .lbl{font-size:52px;font-weight:750;color:var(--accent);letter-spacing:-.04em;line-height:1;font-variation-settings:"opsz" 96}
+.yr[aria-pressed="true"] .ticks i:nth-child(3){height:30px;background:var(--accent);width:3px}
+@media (prefers-reduced-motion: reduce){.dial-track{scroll-behavior:auto}.yr .lbl{transition:none}}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:20px;padding:10px 28px 24px;align-items:start}
+.pane{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.list-pane{position:sticky;top:12px;max-height:calc(100vh - var(--player-h) - 36px);display:flex;flex-direction:column;overflow:hidden}
+.list-head{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.list-head h2{margin:0;font-size:20px;font-weight:700;margin-right:auto;letter-spacing:-.01em}
+.list-head .count{color:var(--muted);font-size:14px;font-weight:400;margin-left:6px}
+.list-head select{padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:14px}
+.chk{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);cursor:pointer}
+.chk input{accent-color:var(--accent)}
+#list{list-style:none;margin:0;padding:6px;overflow-y:auto;flex:1}
+.show{width:100%;display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center;text-align:left;
+  border:0;background:none;padding:11px 10px;border-radius:12px}
+.show:hover{background:var(--surface2)}
+.show[aria-current="true"]{background:var(--accent-soft)}
+.s-date b{display:block;font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.1}
+.s-date small{color:var(--muted);font-size:13px}
+.s-venue{display:block;font-weight:550;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.s-city{display:block;color:var(--muted);font-size:14px}
+.s-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px;color:var(--muted);white-space:nowrap}
+.badge{font-size:12px;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid var(--teal);color:var(--teal)}
+.stars{position:relative;display:inline-block;font-size:13px;letter-spacing:1px;line-height:1;color:var(--line)}
+.stars::before{content:"★★★★★"}
+.stars span{position:absolute;inset:0 auto 0 0;overflow:hidden;color:var(--accent);white-space:nowrap}
+.stars span::before{content:"★★★★★"}
+.rating{display:inline-flex;align-items:center;gap:6px}
+.empty-list,.msg{padding:28px 18px;color:var(--muted);text-align:center}
+.msg .btn{margin-top:12px}
+.skel{height:58px;margin:6px 4px;border-radius:12px;background:linear-gradient(90deg,var(--surface2),var(--bg),var(--surface2));background-size:200% 100%;animation:sh 1.4s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}}
+
+/* Detail */
+.detail-pane{padding:28px 32px 32px;min-height:420px}
+.welcome{max-width:52ch;padding:40px 0}
+.welcome h2{font-size:34px;letter-spacing:-.03em;line-height:1.1;margin:0 0 12px;font-variation-settings:"opsz" 96}
+.welcome p{color:var(--muted);margin:0 0 20px}
+.back{display:none;border:0;background:none;color:var(--muted);padding:0 0 14px;font-weight:550}
+.d-date{margin:0;font-size:clamp(30px,4vw,46px);font-weight:750;letter-spacing:-.035em;line-height:1.02;font-variation-settings:"opsz" 96}
+.d-venue{margin:8px 0 2px;font-size:21px;font-weight:550}
+.d-city{color:var(--muted);margin:0}
+.d-row{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;margin:20px 0 22px}
+.d-row .stars{font-size:18px}
+.d-row .rnum{font-weight:650}
+.d-row .muted{color:var(--muted);font-size:14px}
+.source{display:flex;flex-direction:column;gap:6px;margin:0 0 20px}
+.source label{font-size:14px;color:var(--muted)}
+.source select{max-width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:15px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.tab{border:0;background:none;padding:10px 14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
+.tracks{list-style:none;margin:0;padding:0}
+.trk{width:100%;display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;text-align:left;border:0;background:none;padding:10px 8px;border-radius:10px}
+.trk:hover{background:var(--surface2)}
+.trk .n{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;font-size:14px}
+.trk .t{font-weight:500}
+.trk .len{color:var(--muted);font-variant-numeric:tabular-nums;font-size:14px}
+.trk.playing{background:var(--accent-soft)}
+.trk.playing .t,.trk.playing .n{color:var(--accent);font-weight:650}
+.eqbars{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+.eqbars i{width:3px;background:var(--accent);animation:bounce .9s ease-in-out infinite}
+.eqbars i:nth-child(2){animation-delay:-.3s}.eqbars i:nth-child(3){animation-delay:-.6s}
+.paused .eqbars i{animation-play-state:paused}
+@keyframes bounce{0%,100%{height:3px}50%{height:12px}}
+@media (prefers-reduced-motion: reduce){.eqbars i{animation:none;height:8px}}
+.total{color:var(--muted);font-size:14px;margin:10px 8px 0}
+.notes{white-space:pre-line;max-width:72ch;line-height:1.6;margin:0}
+.recinfo{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:22px 0 0;font-size:14px;max-width:72ch}
+.recinfo dt{color:var(--muted)}
+.recinfo dd{margin:0;white-space:pre-line;word-break:break-word}
+.review{padding:16px 0;border-bottom:1px solid var(--line);max-width:72ch}
+.review h4{margin:6px 0 4px;font-size:16px}
+.review p{margin:0;white-space:pre-line;line-height:1.55}
+.review small{color:var(--muted)}
+.link{color:var(--accent);font-weight:600;text-decoration:none}
+.link:hover{text-decoration:underline}
+
+/* Player */
+.player{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  padding:12px 24px calc(12px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,560px) minmax(0,1fr);gap:20px;align-items:center;min-height:var(--player-h)}
+.np{min-width:0;border:0;background:none;text-align:left;padding:0}
+.np b{display:block;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np small{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.center{display:flex;flex-direction:column;gap:6px}
+.ctrls{display:flex;justify-content:center;align-items:center;gap:14px}
+.ic{border:0;background:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+.ic:hover{background:var(--surface2)}
+.ic svg{width:22px;height:22px;fill:currentColor}
+.ic.play{width:48px;height:48px;background:var(--accent);color:var(--accent-ink)}
+.ic.play:hover{background:var(--accent);filter:brightness(1.07)}
+.ic.play svg{width:24px;height:24px}
+.ic[disabled]{opacity:.35;cursor:default}
+.ic.on{color:var(--accent)}
+.seek{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.seek span{width:44px}.seek span:last-child{text-align:right}
+input[type=range].bar{-webkit-appearance:none;appearance:none;flex:1;height:18px;background:transparent;--p:0%}
+input[type=range].bar::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--accent) var(--p),var(--line) var(--p))}
+input[type=range].bar::-moz-range-track{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--accent) var(--p),var(--line) var(--p))}
+input[type=range].bar::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--ink);margin-top:-5px;border:0}
+input[type=range].bar::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink);border:0}
+.right{display:flex;justify-content:flex-end;align-items:center;gap:8px}
+.vol{width:110px;flex:0 0 auto}
+.loading .play svg{opacity:.4}
+
+/* EQ panel */
+.eq{position:fixed;right:24px;bottom:calc(var(--player-h) + 12px + env(safe-area-inset-bottom,0px));z-index:21;width:min(520px,calc(100vw - 24px));
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px 16px}
+.eq[hidden]{display:none}
+.eq-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.eq-head h3{margin:0;font-size:17px;margin-right:auto}
+.switch{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);cursor:pointer}
+.switch input{accent-color:var(--accent);width:16px;height:16px}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chip{border:1px solid var(--line);background:none;padding:5px 11px;border-radius:999px;font-size:13px;font-weight:550}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.bands{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;height:190px;padding:8px 0 0}
+.bands canvas{position:absolute;inset:8px 0 24px;width:100%;height:calc(100% - 32px);opacity:.5;pointer-events:none;border-radius:8px}
+.band{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px}
+.band input{writing-mode:vertical-lr;direction:rtl;-webkit-appearance:slider-vertical;width:28px;height:150px;accent-color:var(--accent);background:transparent}
+.band span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.eq-note{font-size:13px;color:var(--muted);margin:10px 0 0}
+.eq.off .bands{opacity:.45}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--player-h) + 18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(520px,90vw);box-shadow:var(--shadow)}
+.toast[hidden]{display:none}
+
+/* Responsive */
+@media (max-width: 900px){
+  .top{padding:calc(14px + env(safe-area-inset-top,0px)) 16px 6px}
+  .brand p{display:none}
+  .tools{width:100%}
+  .search{flex:1}.search input{width:100%}
+  .layout{grid-template-columns:1fr;padding:8px 12px 16px}
+  .list-pane{position:static;max-height:none}
+  #list{overflow:visible}
+  .detail-pane{display:none;padding:20px}
+  body.viewing .list-pane{display:none}
+  body.viewing .detail-pane{display:block}
+  body.viewing .dial{display:none}
+  .back{display:inline-block}
+  .player{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;gap:6px 12px;padding:8px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+  .center{grid-column:1 / -1;grid-row:1}
+  .ctrls{display:none}
+  .np{grid-row:2}
+  .right{grid-row:2}
+  .right .vol,.right .volic{display:none}
+  .right .mplay{display:grid}
+  .eq{right:12px}
+  .band input{height:120px}
+  .bands{height:160px}
+}
+.mplay{display:none}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>Tape Room</h1>
+    <p>Grateful Dead shows, streamed from the Internet Archive</p>
+  </div>
+  <div class="tools">
+    <label class="search">
+      <span class="sr">Filter shows</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 1 0 4.2 12.6l5.1 5.1 1.4-1.4-5.1-5.1A7 7 0 0 0 10 3zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/></svg>
+      <input id="filter" type="search" placeholder="Filter by venue, city, or date" autocomplete="off">
+    </label>
+    <button class="btn" id="otd">On this day</button>
+    <button class="btn" id="random">Random show</button>
+  </div>
+</header>
+
+<nav class="dial" aria-label="Choose a year"><div class="dial-track" id="dial"></div></nav>
+
+<main class="layout">
+  <section class="pane list-pane" aria-label="Shows">
+    <div class="list-head">
+      <h2><span id="listTitle">1977</span><span class="count" id="count"></span></h2>
+      <select id="sort" aria-label="Sort shows">
+        <option value="date">By date</option>
+        <option value="rating">Top rated</option>
+        <option value="reviews">Most reviewed</option>
+        <option value="popular">Most played</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="sbd"> Soundboards only</label>
+    </div>
+    <ul id="list"></ul>
+  </section>
+  <section class="pane detail-pane" id="detail" aria-live="polite"></section>
+</main>
+
+<div class="eq" id="eq" hidden role="dialog" aria-label="Equalizer">
+  <div class="eq-head">
+    <h3>Equalizer</h3>
+    <label class="switch"><input type="checkbox" id="eqOn" checked> On</label>
+    <button class="ic" id="eqClose" aria-label="Close equalizer"><svg viewBox="0 0 24 24"><path d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6z"/></svg></button>
+  </div>
+  <div class="presets" id="presets"></div>
+  <div class="bands" id="bands"><canvas id="spec"></canvas></div>
+  <p class="eq-note" id="eqNote">Drag a band to shape the sound. Settings are saved on this device.</p>
+</div>
+
+<footer class="player" id="player">
+  <button class="np" id="np" title="Open this show">
+    <b id="npTitle">Nothing playing</b>
+    <small id="npSub">Pick a year, then a show</small>
+  </button>
+  <div class="center">
+    <div class="ctrls">
+      <button class="ic" id="prev" aria-label="Previous track" disabled><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+      <button class="ic play" id="play" aria-label="Play" disabled><svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z"/></svg></button>
+      <button class="ic" id="next" aria-label="Next track" disabled><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+    </div>
+    <div class="seek">
+      <span id="cur">0:00</span>
+      <input type="range" class="bar" id="seek" min="0" max="1000" value="0" aria-label="Seek" disabled>
+      <span id="dur">0:00</span>
+    </div>
+  </div>
+  <div class="right">
+    <button class="ic mplay" id="mplay" aria-label="Play" disabled><svg viewBox="0 0 24 24" id="mplayIcon"><path d="M8 5v14l11-7z"/></svg></button>
+    <button class="ic volic" id="mute" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
+    <input type="range" class="bar vol" id="vol" min="0" max="100" value="90" aria-label="Volume">
+    <button class="ic" id="eqBtn" aria-label="Equalizer" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M5 3h2v8H5zm0 12h2v6H5zM3 11h6v2H3zm8-8h2v4h-2zm0 8h2v10h-2zm-2-4h6v2H9zm8-4h2v10h-2zm0 14h2v2h-2zm-2-2h6v2h-6z"/></svg></button>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+'use strict';
+const API = 'https://archive.org';
+const FIRST = 1965, LAST = 1995;
+const FIELDS = ['identifier','title','date','venue','coverage','avg_rating','num_reviews','source','downloads'];
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const one = v => Array.isArray(v) ? v[0] : v;
+const store = {
+  get(k, d){ try { const v = localStorage.getItem('taperoom:' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v){ try { localStorage.setItem('taperoom:' + k, JSON.stringify(v)); } catch {} }
+};
+
+const state = {
+  mode: 'year', year: store.get('year', 1977), label: '',
+  shows: [], loading: false, error: null,
+  filter: '', sort: 'date', sbdOnly: false,
+  current: null, sourceId: null, meta: null, metaError: null, tab: 'setlist', allReviews: false,
+  queue: null
+};
+const yearCache = new Map(), metaCache = new Map();
+
+/* ---------- helpers ---------- */
+async function fetchJSON(url, ms = 20000){
+  const c = new AbortController(); const t = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(url, { signal: c.signal }); if (!r.ok) throw new Error('HTTP ' + r.status); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+// Fallback: archive.org also answers JSONP, which works even where fetch() is blocked (e.g. a file opened from disk).
+function jsonp(url, ms = 20000){
+  return new Promise((res, rej) => {
+    const cb = '__tr' + Math.random().toString(36).slice(2);
+    const s = document.createElement('script');
+    const t = setTimeout(() => { done(); rej(new Error('timeout')); }, ms);
+    function done(){ clearTimeout(t); window[cb] = () => {}; s.remove(); }
+    window[cb] = d => { done(); res(d); };
+    s.onerror = () => { done(); rej(new Error('jsonp failed')); };
+    s.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    document.head.appendChild(s);
+  });
+}
+async function getJSON(url){
+  try { return await fetchJSON(url); }
+  catch (e) { console.warn('fetch failed, trying JSONP', e); return await jsonp(url); }
+}
+async function search(q){
+  const p = new URLSearchParams({ q, rows: '3000', page: '1', output: 'json' });
+  FIELDS.forEach(f => p.append('fl[]', f));
+  p.append('sort[]', 'date asc');
+  const data = await getJSON(`${API}/advancedsearch.php?${p}`);
+  return data.response?.docs || [];
+}
+function parts(d){ const [y, m, dd] = d.slice(0, 10).split('-').map(Number); return { y, m, d: dd }; }
+function validDate(d){ const p = parts(d); return p.m >= 1 && p.m <= 12 && p.d >= 1; }
+function toDate(d){ const p = parts(d); return new Date(Date.UTC(p.y, p.m - 1, p.d)); }
+function fmt(d, opts){ return validDate(d) ? toDate(d).toLocaleDateString(undefined, { timeZone: 'UTC', ...opts }) : d.slice(0, 10); }
+const fmtLong = d => fmt(d, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+const fmtShort = d => fmt(d, { month: 'short', day: 'numeric' });
+const fmtDow = d => validDate(d) ? fmt(d, { weekday: 'short' }) : '';
+function clock(s){ s = Math.max(0, Math.floor(s || 0)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2,'0')}:${x}` : `${m}:${x}`; }
+function parseLen(v){ if (v == null) return 0; v = String(v); if (v.includes(':')) return v.split(':').map(Number).reduce((a, n) => a * 60 + n, 0); return parseFloat(v) || 0; }
+function starHTML(r){ return `<span class="stars" role="img" aria-label="${r ? r.toFixed(1) + ' out of 5 stars' : 'No ratings'}"><span style="width:${(r / 5) * 100}%"></span></span>`; }
+function htmlToText(h){
+  if (!h) return '';
+  if (Array.isArray(h)) h = h.join('\n');
+  const prepped = String(h).replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|li|h\d|tr)>/gi, '\n');
+  const doc = new DOMParser().parseFromString(prepped, 'text/html');
+  return (doc.body.textContent || '').replace(/\r/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+function kind(s){
+  const t = `${one(s.source) || ''} ${s.identifier}`.toLowerCase();
+  if (/matrix|\bmtx\b/.test(t)) return 'Matrix';
+  if (/sbd|soundboard/.test(t)) return 'Soundboard';
+  if (/\baud\b|audience/.test(t)) return 'Audience';
+  return 'Recording';
+}
+const score = s => s.rating * Math.min(1, Math.log10(s.reviews + 1) / 1.2) + Math.log10(s.dl + 1) * 0.05;
+
+function groupDocs(docs){
+  const map = new Map();
+  for (const d of docs){
+    const date = String(one(d.date) || '').slice(0, 10);
+    if (!date) continue;
+    if (!map.has(date)) map.set(date, []);
+    map.get(date).push(d);
+  }
+  return [...map].map(([date, srcs]) => {
+    srcs.forEach(s => {
+      s.venue = one(s.venue); s.coverage = one(s.coverage); s.kind = kind(s);
+      s.rating = +s.avg_rating || 0; s.reviews = +s.num_reviews || 0; s.dl = +s.downloads || 0;
+    });
+    srcs.sort((a, b) => score(b) - score(a));
+    const n = srcs.reduce((a, s) => a + s.reviews, 0);
+    const rating = n ? srcs.reduce((a, s) => a + s.rating * s.reviews, 0) / n : 0;
+    return {
+      date, sources: srcs, rating, reviews: n,
+      venue: (srcs.find(s => s.venue) || {}).venue || 'Venue not listed',
+      coverage: (srcs.find(s => s.coverage) || {}).coverage || '',
+      hasSbd: srcs.some(s => s.kind === 'Soundboard'),
+      downloads: srcs.reduce((a, s) => a + s.dl, 0)
+    };
+  });
+}
+
+function parseMeta(id, data){
+  if (!data || !data.files) throw new Error('No files');
+  const files = data.files;
+  const byName = new Map(files.map(f => [f.name, f]));
+  const prefs = ['VBR MP3', 'MP3', '64Kbps MP3', '128Kbps MP3', 'Ogg Vorbis'];
+  const fmt = prefs.find(p => files.some(f => f.format === p));
+  let tracks = fmt ? files.filter(f => f.format === fmt) : [];
+  const num = f => { const t = parseInt(String(f.track || '').split('/')[0], 10); return isNaN(t) ? null : t; };
+  tracks.sort((a, b) => {
+    const ta = num(a), tb = num(b);
+    if (ta != null && tb != null && ta !== tb) return ta - tb;
+    return a.name.localeCompare(b.name, undefined, { numeric: true });
+  });
+  tracks = tracks.map(f => {
+    const orig = f.original ? byName.get(f.original) : null;
+    const clean = f.name.replace(/\.[^.]+$/, '').replace(/^.*\//, '').replace(/[_]+/g, ' ');
+    return {
+      title: f.title || orig?.title || clean,
+      len: parseLen(f.length || orig?.length),
+      url: `${API}/download/${encodeURIComponent(id)}/${f.name.split('/').map(encodeURIComponent).join('/')}`
+    };
+  });
+  const md = data.metadata || {};
+  return {
+    id, tracks, md,
+    notes: htmlToText(md.description),
+    reviews: (data.reviews || []).slice().sort((a, b) => String(b.reviewdate || '').localeCompare(String(a.reviewdate || '')))
+  };
+}
+
+/* ---------- dial ---------- */
+function buildDial(){
+  const el = $('#dial');
+  let html = '';
+  for (let y = FIRST; y <= LAST; y++){
+    html += `<button class="yr${y % 10 === 0 ? ' decade' : ''}" data-year="${y}" aria-pressed="false"><span class="lbl">${y}</span><span class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></button>`;
+  }
+  el.innerHTML = html;
+  el.addEventListener('click', e => { const b = e.target.closest('.yr'); if (b) loadYear(+b.dataset.year); });
+  el.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const y = Math.min(LAST, Math.max(FIRST, (state.year || 1977) + (e.key === 'ArrowRight' ? 1 : -1)));
+    loadYear(y); el.querySelector(`[data-year="${y}"]`).focus();
+  });
+}
+function markDial(){
+  document.querySelectorAll('.yr').forEach(b => {
+    const on = state.mode === 'year' && +b.dataset.year === state.year;
+    b.setAttribute('aria-pressed', on);
+    if (on) centerYear(b);
+  });
+}
+function centerYear(b){
+  const track = $('#dial');
+  requestAnimationFrame(() => {
+    track.scrollLeft = b.offsetLeft - track.clientWidth / 2 + b.offsetWidth / 2;
+  });
+}
+
+/* ---------- list ---------- */
+async function loadYear(y, keepDetail){
+  state.mode = 'year'; state.year = y; store.set('year', y);
+  state.label = String(y);
+  markDial();
+  await loadList(() => yearCache.get(y) || search(`collection:GratefulDead AND year:${y}`).then(groupDocs).then(g => (yearCache.set(y, g), g)));
+}
+async function loadOnThisDay(){
+  const now = new Date();
+  const mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
+  state.mode = 'otd';
+  state.label = 'On this day, ' + now.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
+  markDial();
+  await loadList(async () => {
+    const docs = await search(`collection:GratefulDead AND identifier:gd*-${mm}-${dd}*`);
+    return groupDocs(docs.filter(d => String(one(d.date) || '').slice(5, 10) === `${mm}-${dd}`));
+  });
+}
+async function loadList(getter){
+  state.loading = true; state.error = null; state.retry = getter;
+  renderList();
+  try { state.shows = await getter(); }
+  catch (e) { state.error = e; state.shows = []; }
+  state.loading = false;
+  renderList();
+}
+function visible(){
+  let list = state.shows;
+  const f = state.filter.trim().toLowerCase();
+  if (f) list = list.filter(g => `${g.date} ${g.venue} ${g.coverage} ${fmtLong(g.date)}`.toLowerCase().includes(f));
+  if (state.sbdOnly) list = list.filter(g => g.hasSbd);
+  const bayes = g => (g.rating * g.reviews + 3.6 * 4) / (g.reviews + 4);
+  const sorters = {
+    date: (a, b) => a.date.localeCompare(b.date),
+    rating: (a, b) => bayes(b) - bayes(a),
+    reviews: (a, b) => b.reviews - a.reviews,
+    popular: (a, b) => b.downloads - a.downloads
+  };
+  return list.slice().sort(sorters[state.sort]);
+}
+function renderList(){
+  $('#listTitle').textContent = state.label;
+  const ul = $('#list');
+  if (state.loading){ $('#count').textContent = ''; ul.innerHTML = '<li class="skel"></li>'.repeat(8); return; }
+  if (state.error){
+    $('#count').textContent = '';
+    ul.innerHTML = `<li class="msg">Couldn't reach archive.org. If you're viewing this inside Claude's preview, open the file in your browser or host it instead. Otherwise, check your connection and try again.<br><button class="btn" id="retry">Try again</button></li>`;
+    $('#retry').onclick = () => loadList(state.retry);
+    return;
+  }
+  const list = visible();
+  $('#count').textContent = list.length ? `${list.length} show${list.length === 1 ? '' : 's'}` : '';
+  if (!list.length){
+    ul.innerHTML = `<li class="empty-list">${state.shows.length ? 'No shows match that filter. Clear it to see the whole list.' : 'No recordings found here. Try another year.'}</li>`;
+    return;
+  }
+  const showYear = state.mode !== 'year';
+  ul.innerHTML = list.map(g => `
+    <li><button class="show" data-date="${g.date}" aria-current="${state.current?.date === g.date}">
+      <span class="s-date"><b>${showYear ? g.date.slice(0, 4) : esc(fmtShort(g.date))}</b><small>${showYear ? esc(fmtShort(g.date)) : esc(fmtDow(g.date))}</small></span>
+      <span><span class="s-venue">${esc(g.venue)}</span><span class="s-city">${esc(g.coverage)}</span></span>
+      <span class="s-meta">
+        ${g.reviews ? `<span class="rating">${starHTML(g.rating)}<span>${g.reviews}</span></span>` : '<span>No reviews</span>'}
+        <span>${g.hasSbd ? '<span class="badge">SBD</span> ' : ''}${g.sources.length} tape${g.sources.length === 1 ? '' : 's'}</span>
+      </span>
+    </button></li>`).join('');
+}
+$('#list').addEventListener('click', e => {
+  const b = e.target.closest('.show'); if (!b) return;
+  const g = state.shows.find(x => x.date === b.dataset.date);
+  if (g) openShow(g);
+});
+
+/* ---------- detail ---------- */
+function openShow(g, sourceId){
+  state.current = g; state.tab = 'setlist'; state.allReviews = false;
+  document.body.classList.add('viewing');
+  document.querySelectorAll('.show').forEach(b => b.setAttribute('aria-current', b.dataset.date === g.date));
+  if (matchMedia('(max-width: 900px)').matches) window.scrollTo(0, 0);
+  loadSource(sourceId && g.sources.some(s => s.identifier === sourceId) ? sourceId : g.sources[0].identifier);
+}
+async function loadSource(id){
+  state.sourceId = id; state.meta = null; state.metaError = null;
+  renderDetail();
+  try {
+    let m = metaCache.get(id);
+    if (!m){ m = parseMeta(id, await getJSON(`${API}/metadata/${encodeURIComponent(id)}`)); metaCache.set(id, m); }
+    if (state.sourceId !== id) return;
+    state.meta = m;
+    history.replaceState(null, '', '#' + id);
+  } catch (e) {
+    if (state.sourceId !== id) return;
+    state.metaError = e;
+  }
+  renderDetail();
+}
+function welcome(){
+  return `<div class="welcome">
+    <h2>Thirty years of shows, one tap away.</h2>
+    <p>Pick a year on the dial, then choose a show to see its set list, ratings, and notes. Every recording streams straight from the Internet Archive's Grateful Dead collection.</p>
+    <button class="btn primary" id="wRandom">Play a random show</button>
+  </div>`;
+}
+function renderDetail(){
+  const el = $('#detail');
+  const g = state.current;
+  if (!g){ el.innerHTML = welcome(); $('#wRandom').onclick = () => randomShow(true); return; }
+  const m = state.meta;
+  const src = g.sources.find(s => s.identifier === state.sourceId) || g.sources[0];
+  const opts = g.sources.map(s => `<option value="${esc(s.identifier)}"${s.identifier === state.sourceId ? ' selected' : ''}>${s.kind}${s.reviews ? `, ${s.rating.toFixed(1)}★ (${s.reviews} review${s.reviews === 1 ? '' : 's'})` : ''} — ${esc(s.identifier)}</option>`).join('');
+  const playingThis = state.queue && m && state.queue.id === m.id;
+  let body;
+  if (state.metaError) body = `<p class="msg">This recording's details didn't load from archive.org.<br><button class="btn" id="mRetry">Try again</button></p>`;
+  else if (!m) body = '<div class="skel"></div>'.repeat(6);
+  else body = tabBody(m, playingThis);
+
+  el.innerHTML = `
+    <button class="back" id="back">‹ All shows</button>
+    <h2 class="d-date">${esc(fmtLong(g.date))}</h2>
+    <p class="d-venue">${esc(g.venue)}</p>
+    <p class="d-city">${esc(g.coverage)}</p>
+    <div class="d-row">
+      <button class="btn primary" id="playShow" ${m && m.tracks.length ? '' : 'disabled'}>${playingThis ? 'Restart show' : 'Play show'}</button>
+      ${src.reviews ? `<span class="rating">${starHTML(src.rating)}<span class="rnum">${src.rating.toFixed(1)}</span><span class="muted">${src.reviews} review${src.reviews === 1 ? '' : 's'} of this tape</span></span>` : '<span class="muted">No reviews of this tape yet</span>'}
+      <a class="link" href="https://archive.org/details/${encodeURIComponent(state.sourceId)}" target="_blank" rel="noopener">Open on archive.org</a>
+    </div>
+    ${g.sources.length > 1 ? `<div class="source"><label for="srcSel">Recording (${g.sources.length} available, best rated first)</label><select id="srcSel">${opts}</select></div>` : `<p class="muted" style="color:var(--muted);font-size:14px;margin:-8px 0 18px">${src.kind}</p>`}
+    <div class="tabs" role="tablist">
+      ${['setlist', 'notes', 'reviews'].map(t => `<button class="tab" role="tab" data-tab="${t}" aria-selected="${state.tab === t}">${{ setlist: 'Set list', notes: 'Show notes', reviews: `Reviews${m ? ` (${m.reviews.length})` : ''}` }[t]}</button>`).join('')}
+    </div>
+    <div role="tabpanel">${body}</div>`;
+
+  $('#back').onclick = () => { document.body.classList.remove('viewing'); };
+  const sel = $('#srcSel'); if (sel) sel.onchange = () => loadSource(sel.value);
+  const pr = $('#mRetry'); if (pr) pr.onclick = () => { metaCache.delete(state.sourceId); loadSource(state.sourceId); };
+  $('#playShow').onclick = () => playFrom(0);
+  el.querySelectorAll('.tab').forEach(b => b.onclick = () => { state.tab = b.dataset.tab; renderDetail(); });
+  el.querySelectorAll('.trk').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i;
+    if (playingThis && state.queue.index === i) togglePlay(); else playFrom(i);
+  });
+  const more = $('#moreRev'); if (more) more.onclick = () => { state.allReviews = true; renderDetail(); };
+}
+function tabBody(m, playingThis){
+  if (state.tab === 'setlist'){
+    if (!m.tracks.length) return '<p class="msg">This recording has no streamable audio. Choose another recording above.</p>';
+    const total = m.tracks.reduce((a, t) => a + t.len, 0);
+    const paused = audio.paused ? ' paused' : '';
+    return `<ol class="tracks">${m.tracks.map((t, i) => {
+      const on = playingThis && state.queue.index === i;
+      return `<li><button class="trk${on ? ' playing' + paused : ''}" data-i="${i}" aria-label="Play ${esc(t.title)}">
+        <span class="n">${on ? '<span class="eqbars" aria-hidden="true"><i></i><i></i><i></i></span>' : i + 1}</span>
+        <span class="t">${esc(t.title)}</span><span class="len">${t.len ? clock(t.len) : ''}</span></button></li>`;
+    }).join('')}</ol>${total ? `<p class="total">${m.tracks.length} tracks, ${clock(total)} total</p>` : ''}`;
+  }
+  if (state.tab === 'notes'){
+    const md = m.md;
+    const rows = [['Source', md.source], ['Lineage', md.lineage], ['Taped by', md.taper], ['Transferred by', md.transferer], ['Added', md.addeddate && String(md.addeddate).slice(0, 10)]]
+      .filter(r => r[1]).map(([k, v]) => `<dt>${k}</dt><dd>${esc(htmlToText(v))}</dd>`).join('');
+    const extra = htmlToText(md.notes);
+    return `${m.notes ? `<p class="notes">${esc(m.notes)}</p>` : '<p style="color:var(--muted)">No show notes for this recording.</p>'}
+      ${extra ? `<p class="notes" style="margin-top:16px">${esc(extra)}</p>` : ''}
+      ${rows ? `<dl class="recinfo">${rows}</dl>` : ''}`;
+  }
+  if (!m.reviews.length) return '<p style="color:var(--muted)">No one has reviewed this recording yet.</p>';
+  const list = state.allReviews ? m.reviews : m.reviews.slice(0, 5);
+  return list.map(r => `<article class="review">
+      ${starHTML(+r.stars || 0)}
+      <h4>${esc(r.reviewtitle || 'Untitled review')}</h4>
+      <p>${esc(htmlToText(r.reviewbody))}</p>
+      <small>${esc(r.reviewer || 'Anonymous')}${r.reviewdate ? ', ' + esc(String(r.reviewdate).slice(0, 10)) : ''}</small>
+    </article>`).join('') + (!state.allReviews && m.reviews.length > 5 ? `<p><button class="btn" id="moreRev">Show all ${m.reviews.length} reviews</button></p>` : '');
+}
+
+/* ---------- random ---------- */
+async function randomShow(play){
+  const y = FIRST + 1 + Math.floor(Math.random() * (LAST - FIRST));
+  await loadYear(y);
+  const pool = state.shows.filter(g => g.reviews > 0);
+  const list = pool.length ? pool : state.shows;
+  if (!list.length) return;
+  const g = list[Math.floor(Math.random() * list.length)];
+  openShow(g);
+  if (play){
+    const wait = setInterval(() => { if (state.meta || state.metaError){ clearInterval(wait); if (state.meta) playFrom(0); } }, 150);
+    setTimeout(() => clearInterval(wait), 20000);
+  }
+}
+
+/* ---------- audio + EQ ---------- */
+const BANDS = [
+  { f: 60, t: 'lowshelf', l: '60' }, { f: 170, t: 'peaking', l: '170' }, { f: 400, t: 'peaking', l: '400' },
+  { f: 1000, t: 'peaking', l: '1k' }, { f: 2500, t: 'peaking', l: '2.5k' }, { f: 6000, t: 'peaking', l: '6k' }, { f: 12000, t: 'highshelf', l: '12k' }
+];
+const PRESETS = {
+  'Flat': [0, 0, 0, 0, 0, 0, 0],
+  'Warm': [3, 2, 0, -1, -1, -2, -3],
+  'Bright': [-1, 0, 0, 1, 3, 4, 4],
+  'Bass': [6, 4, 1, 0, 0, 0, 0],
+  'Vocals': [-2, -1, 1, 3, 3, 1, 0],
+  'Hiss cut': [0, 0, 0, 0, 0, -3, -7],
+  'Audience tape': [-3, -1, -1, 1, 3, 1, -4]
+};
+const eq = store.get('eq', { on: true, gains: PRESETS.Flat.slice(), preset: 'Flat' });
+let audio, ctx = null, graph = null, corsMode = true, eqAvailable = true, errCount = 0, dragging = false;
+let volume = store.get('vol', 0.9), lastVol = volume || 0.9;
+
+function createAudio(cors){
+  const a = new Audio();
+  if (cors) a.crossOrigin = 'anonymous';
+  a.preload = 'auto';
+  a.volume = volume;
+  a.addEventListener('timeupdate', onTime);
+  a.addEventListener('durationchange', onTime);
+  a.addEventListener('play', syncPlay);
+  a.addEventListener('pause', syncPlay);
+  a.addEventListener('waiting', () => $('#player').classList.add('loading'));
+  a.addEventListener('playing', () => { $('#player').classList.remove('loading'); errCount = 0; syncPlay(); });
+  a.addEventListener('ended', () => { if (a === audio) next(); });
+  a.addEventListener('error', onAudioError);
+  return a;
+}
+audio = createAudio(true);
+
+function ensureGraph(){
+  if (graph || !corsMode || !eqAvailable){ if (ctx && ctx.state === 'suspended') ctx.resume(); return; }
+  try {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ctx.createMediaElementSource(audio);
+    const filters = BANDS.map(b => { const f = ctx.createBiquadFilter(); f.type = b.t; f.frequency.value = b.f; f.Q.value = 1.1; return f; });
+    const pre = ctx.createGain();
+    const an = ctx.createAnalyser(); an.fftSize = 2048; an.smoothingTimeConstant = 0.82;
+    let node = src; filters.forEach(f => { node.connect(f); node = f; });
+    node.connect(pre); pre.connect(an); an.connect(ctx.destination);
+    graph = { filters, pre, an };
+    applyEq();
+  } catch (e) { console.warn('EQ unavailable', e); eqAvailable = false; renderEqNote(); }
+}
+function applyEq(){
+  if (!graph) return;
+  const g = eq.on ? eq.gains : eq.gains.map(() => 0);
+  const t = ctx.currentTime;
+  graph.filters.forEach((f, i) => f.gain.setTargetAtTime(g[i], t, 0.03));
+  const peak = Math.max(0, ...g);
+  graph.pre.gain.setTargetAtTime(Math.pow(10, (-peak * 0.6) / 20), t, 0.03);
+}
+async function onAudioError(e){
+  if (e.target !== audio || !state.queue || !audio.getAttribute('src')) return;
+  const url = audio.src;
+  if (corsMode){
+    // Check whether this is a cross-origin block (then retry without the EQ) or a genuinely missing file.
+    let corsOk = false;
+    try { const r = await fetch(url, { method: 'HEAD', mode: 'cors' }); corsOk = r.ok; } catch {}
+    if (!corsOk){
+      corsMode = false; eqAvailable = false;
+      const old = audio; audio = createAudio(false);
+      old.removeAttribute('src'); old.load();
+      audio.src = url; audio.play().catch(() => {});
+      renderEqNote();
+      toast('Playing without the equalizer: this browser blocked audio processing for archive.org streams.');
+      return;
+    }
+  }
+  errCount++;
+  const q = state.queue;
+  if (errCount < 3 && q.index < q.tracks.length - 1){ toast("That track didn't load. Skipping ahead."); loadTrack(q.index + 1); }
+  else { toast("Playback stopped: archive.org didn't return this track. Try another recording of the show."); syncPlay(); }
+}
+
+function playFrom(i){
+  const m = state.meta; if (!m || !m.tracks.length) return;
+  state.queue = { id: m.id, tracks: m.tracks, show: state.current, index: i };
+  loadTrack(i);
+}
+function loadTrack(i){
+  const q = state.queue; if (!q || i < 0 || i >= q.tracks.length) return;
+  q.index = i;
+  ensureGraph();
+  audio.src = q.tracks[i].url;
+  audio.play().catch(() => {});
+  ['#play', '#mplay', '#seek'].forEach(s => $(s).disabled = false);
+  updateNowPlaying();
+  if (state.meta && state.meta.id === q.id && state.tab === 'setlist') renderDetail();
+}
+function togglePlay(){
+  if (!state.queue){ if (state.meta) playFrom(0); return; }
+  ensureGraph();
+  if (audio.paused) audio.play().catch(() => {}); else audio.pause();
+}
+function next(){ const q = state.queue; if (q && q.index < q.tracks.length - 1) loadTrack(q.index + 1); }
+function prev(){ const q = state.queue; if (!q) return; if (audio.currentTime > 4 || q.index === 0) audio.currentTime = 0; else loadTrack(q.index - 1); }
+
+const PLAY = '<path d="M8 5v14l11-7z"/>', PAUSE = '<path d="M6 5h4v14H6zm8 0h4v14h-4z"/>';
+function syncPlay(){
+  const p = !audio.paused;
+  $('#playIcon').innerHTML = $('#mplayIcon').innerHTML = p ? PAUSE : PLAY;
+  $('#play').setAttribute('aria-label', p ? 'Pause' : 'Play');
+  $('#mplay').setAttribute('aria-label', p ? 'Pause' : 'Play');
+  document.querySelectorAll('.trk.playing').forEach(b => b.classList.toggle('paused', !p));
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = p ? 'playing' : 'paused';
+  if (p && $('#eq').hidden === false) drawSpectrum();
+}
+function onTime(){
+  const d = audio.duration, c = audio.currentTime;
+  $('#cur').textContent = clock(c);
+  $('#dur').textContent = isFinite(d) ? clock(d) : (state.queue ? clock(state.queue.tracks[state.queue.index].len) : '0:00');
+  if (!dragging && isFinite(d) && d > 0){ const s = $('#seek'); s.value = (c / d) * 1000; s.style.setProperty('--p', (c / d) * 100 + '%'); }
+}
+function updateNowPlaying(){
+  const q = state.queue; if (!q) return;
+  const t = q.tracks[q.index], g = q.show;
+  $('#npTitle').textContent = t.title;
+  $('#npSub').textContent = `${fmtLong(g.date)}, ${g.venue}`;
+  $('#prev').disabled = false;
+  $('#next').disabled = q.index >= q.tracks.length - 1;
+  document.title = `${t.title} — ${fmtShort(g.date)} ${g.date.slice(0, 4)} | Tape Room`;
+  if ('mediaSession' in navigator){
+    navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: 'Grateful Dead', album: `${g.date.slice(0, 10)} ${g.venue}` });
+  }
+}
+if ('mediaSession' in navigator){
+  const ms = navigator.mediaSession;
+  ms.setActionHandler('play', () => audio.play());
+  ms.setActionHandler('pause', () => audio.pause());
+  ms.setActionHandler('nexttrack', next);
+  ms.setActionHandler('previoustrack', prev);
+  try { ms.setActionHandler('seekto', d => { audio.currentTime = d.seekTime; }); } catch {}
+}
+
+/* player controls */
+$('#play').onclick = togglePlay;
+$('#mplay').onclick = togglePlay;
+$('#next').onclick = next;
+$('#prev').onclick = prev;
+const seek = $('#seek');
+seek.addEventListener('input', () => { dragging = true; seek.style.setProperty('--p', seek.value / 10 + '%'); if (isFinite(audio.duration)) $('#cur').textContent = clock(seek.value / 1000 * audio.duration); });
+seek.addEventListener('change', () => { if (isFinite(audio.duration)) audio.currentTime = seek.value / 1000 * audio.duration; dragging = false; });
+const vol = $('#vol');
+function setVol(v){ volume = v; audio.volume = v; vol.value = v * 100; vol.style.setProperty('--p', v * 100 + '%'); store.set('vol', v); }
+vol.addEventListener('input', () => { setVol(vol.value / 100); if (volume > 0) lastVol = volume; });
+$('#mute').onclick = () => setVol(volume > 0 ? 0 : lastVol || 0.9);
+setVol(volume);
+$('#np').onclick = () => {
+  const q = state.queue; if (!q) return;
+  const g = q.show;
+  if (state.current !== g || state.sourceId !== q.id) openShow(g, q.id);
+  else document.body.classList.add('viewing');
+};
+
+/* EQ UI */
+function buildEq(){
+  $('#presets').innerHTML = Object.keys(PRESETS).map(p => `<button class="chip" data-p="${p}" aria-pressed="${eq.preset === p}">${p}</button>`).join('');
+  $('#bands').insertAdjacentHTML('beforeend', BANDS.map((b, i) => `
+    <label class="band"><input type="range" min="-12" max="12" step="0.5" value="${eq.gains[i]}" data-i="${i}" aria-label="${b.l} hertz"><span>${b.l}</span></label>`).join(''));
+  $('#eqOn').checked = eq.on;
+  $('#eq').classList.toggle('off', !eq.on);
+  $('#presets').onclick = e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    eq.preset = b.dataset.p; eq.gains = PRESETS[eq.preset].slice();
+    document.querySelectorAll('.band input').forEach((inp, i) => inp.value = eq.gains[i]);
+    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+    saveEq();
+  };
+  $('#bands').addEventListener('input', e => {
+    const inp = e.target.closest('input'); if (!inp) return;
+    eq.gains[+inp.dataset.i] = +inp.value; eq.preset = 'Custom';
+    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+    saveEq();
+  });
+  $('#eqOn').onchange = e => { eq.on = e.target.checked; $('#eq').classList.toggle('off', !eq.on); saveEq(); };
+  $('#eqBtn').onclick = () => toggleEq();
+  $('#eqClose').onclick = () => toggleEq(false);
+  renderEqNote();
+}
+function saveEq(){ store.set('eq', eq); applyEq(); $('#eqBtn').classList.toggle('on', eq.on && eq.gains.some(g => g !== 0)); }
+function toggleEq(force){
+  const panel = $('#eq'); const show = force ?? panel.hidden;
+  panel.hidden = !show; $('#eqBtn').setAttribute('aria-expanded', show);
+  if (show) drawSpectrum();
+}
+function renderEqNote(){
+  $('#eqNote').textContent = eqAvailable
+    ? 'Drag a band to shape the sound. Settings are saved on this device.'
+    : "This browser won't let the page process archive.org audio, so the equalizer is off. Playback still works.";
+  document.querySelectorAll('.band input, #eqOn, .chip').forEach(i => i.disabled = !eqAvailable);
+}
+let rafId = 0;
+function drawSpectrum(){
+  cancelAnimationFrame(rafId);
+  const cv = $('#spec'); const c2 = cv.getContext('2d');
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  const loop = () => {
+    if ($('#eq').hidden || !graph || audio.paused){ c2.clearRect(0, 0, cv.width, cv.height); return; }
+    const w = cv.clientWidth * devicePixelRatio, h = cv.clientHeight * devicePixelRatio;
+    if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+    const data = new Uint8Array(graph.an.frequencyBinCount);
+    graph.an.getByteFrequencyData(data);
+    c2.clearRect(0, 0, w, h);
+    c2.fillStyle = accent; c2.globalAlpha = 0.35;
+    const bars = 56, nyq = ctx.sampleRate / 2;
+    for (let i = 0; i < bars; i++){
+      const f0 = 30 * Math.pow(16000 / 30, i / bars), f1 = 30 * Math.pow(16000 / 30, (i + 1) / bars);
+      const a = Math.floor(f0 / nyq * data.length), b = Math.max(a + 1, Math.floor(f1 / nyq * data.length));
+      let m = 0; for (let k = a; k < b; k++) m = Math.max(m, data[k]);
+      const bh = (m / 255) * h, bw = w / bars;
+      c2.fillRect(i * bw + 1, h - bh, bw - 2, bh);
+    }
+    rafId = requestAnimationFrame(loop);
+  };
+  loop();
+}
+
+/* ---------- misc UI ---------- */
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 4200); }
+$('#filter').addEventListener('input', e => { state.filter = e.target.value; renderList(); });
+$('#sort').onchange = e => { state.sort = e.target.value; renderList(); };
+$('#sbd').onchange = e => { state.sbdOnly = e.target.checked; renderList(); };
+$('#otd').onclick = loadOnThisDay;
+$('#random').onclick = () => randomShow(false);
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input, select, textarea') && e.target.type !== 'range') return;
+  if (e.key === ' ' && !e.target.closest('button')){ e.preventDefault(); togglePlay(); }
+  else if (e.key === 'Escape') toggleEq(false);
+  else if (e.target.closest('.dial, input[type=range]')) return;
+  else if (e.key === 'ArrowRight' && state.queue && !e.shiftKey) audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
+  else if (e.key === 'ArrowLeft' && state.queue && !e.shiftKey) audio.currentTime = Math.max(0, audio.currentTime - 10);
+  else if (e.key === 'ArrowRight' && e.shiftKey) next();
+  else if (e.key === 'ArrowLeft' && e.shiftKey) prev();
+});
+
+/* ---------- boot ---------- */
+async function boot(){
+  buildDial(); buildEq(); saveEq(); renderDetail();
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (id){
+    try {
+      const data = await getJSON(`${API}/metadata/${encodeURIComponent(id)}`);
+      const date = String(one(data.metadata?.date) || '').slice(0, 10);
+      if (date){
+        metaCache.set(id, parseMeta(id, data));
+        await loadYear(+date.slice(0, 4));
+        const g = state.shows.find(x => x.date === date);
+        if (g){ openShow(g, id); return; }
+      }
+    } catch {}
+  }
+  loadYear(state.year);
+}
+boot();
+})();
+</script>
+</body>
+</html>
