@@ -654,10 +654,17 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   .brand p{display:none}
   .tools{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .search{grid-column:1/-1}
-  .minibar{display:block;position:fixed;left:0;right:0;top:0;z-index:12;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 8px;background:var(--bg);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .25s ease}
-  .minibar.show{transform:none}
+  .minibar{display:flex;align-items:center;justify-content:space-between;gap:12px;position:fixed;left:0;right:0;top:0;z-index:12;border-radius:0;
+    padding:calc(10px + env(safe-area-inset-top,0px) + var(--pill,0px)) 18px 12px;
+    background:linear-gradient(to bottom,color-mix(in srgb,var(--bg) 72%,transparent),color-mix(in srgb,var(--bg) 46%,transparent));
+    -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);
+    box-shadow:inset 0 -1px 0 rgba(var(--t-hi),.08);
+    transform:translateY(-100%);opacity:0;transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .24s ease}
+  html.ios-browser .minibar{--pill:44px}
+  .minibar.is-shown{transform:none;opacity:1}
+  .mini-ctx{font-size:13px;font-weight:650;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.01em}
   body.viewing .minibar{display:none}
-  .minibar .word{font-size:26px}
+  .minibar .word{font-size:24px}
   .tools{grid-template-columns:repeat(4,1fr)!important}
   .tools .search{display:none}
   .songBtn{display:inline-flex}
@@ -757,7 +764,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
 <body>
 
 <div class="bgfx" aria-hidden="true"></div>
-<div class="minibar" id="minibar" aria-hidden="true"><a href="./" class="home" id="homeLink2" tabindex="-1"><span class="word mini" id="wordmark2">deadjams</span></a></div>
+<div class="minibar" id="minibar" aria-hidden="true"><a href="./" class="home" id="homeLink2" tabindex="-1"><span class="word mini" id="wordmark2">deadjams</span></a><span class="mini-ctx" id="miniCtx"></span></div>
 <header class="top">
   <div class="brand">
  <a href="./" class="home" id="homeLink" aria-label="deadjams, go to the start"><h1 class="word" id="wordmark" aria-label="deadjams">deadjams</h1></a>
@@ -838,7 +845,6 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     <button class="ic mnext" id="mnext" aria-label="Next track" disabled><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
     <button class="ic volic" id="mute" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
     <input type="range" class="bar vol" id="vol" min="0" max="100" value="90" aria-label="Volume">
-    <button class="btn" id="tvBtn" hidden>TV mode</button>
     <button class="tripbtn" id="tripBtn">Trip out</button>
     <button class="ic castbtn" id="castBtn" aria-label="Play on a speaker or TV" title="Play on a speaker or TV"><svg viewBox="0 0 24 24" class="stroke"><rect x="7" y="3" width="10" height="18" rx="2.5"/><circle cx="12" cy="14.5" r="2.6"/><circle cx="12" cy="7.5" r="1"/><path d="M3.5 8.5a8 8 0 0 0 0 7M20.5 8.5a8 8 0 0 1 0 7"/></svg></button>
     <button class="btn setbtn" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" class="stroke"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button>
@@ -879,12 +885,6 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     <canvas id="tripCv" aria-hidden="true"></canvas>
     <button class="trip-x" id="tripX" aria-label="Close trip out"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <p class="trip-need" id="tripNeed" hidden></p>
-    <div class="tv-info" id="tvInfo" aria-live="polite">
-      <p class="tv-brand">deadjams</p>
-      <div class="tv-now"><p class="tv-date" id="tvDate"></p><h2 class="tv-song" id="tvSong">Nothing playing</h2><p class="tv-next" id="tvNext"></p><div class="tv-prog"><i id="tvProg"></i></div></div>
-      <ol class="tv-list" id="tvList"></ol>
-      <p class="tv-keys" id="tvKeys">Left and right change songs · OK plays and pauses · Up rolls new visuals · Back exits</p>
-    </div>
     <button id="bDice" aria-label="Roll the dice for new visuals">
       <span class="wrap"><span class="view"><span class="cube" id="cube">
         <span class="face f1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 17.5h1.2c1.3 0 2.5-.6 3.3-1.7l5.6-8c.7-1.1 2-1.7 3.3-1.7h5.1"/><path d="m18.2 2.9 3.4 3.2-3.4 3.2"/><path d="M2.5 6.5h1.2c1.1 0 2.1.4 2.8 1.2"/><path d="M21.5 17.5h-5.1c-1.3 0-2.5-.6-3.3-1.6l-.6-.9"/><path d="m18.2 14.3 3.4 3.2-3.4 3.2"/></svg></span>
@@ -927,7 +927,6 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     </div>
     <div class="set-group">
       <h3>Playback</h3>
-      <button class="set-row" id="setTv"><span>TV mode<small>A big-screen now-playing view with the visuals, for screen mirroring or your TV's web browser</small></span><b>Open</b></button>
       <label class="set-row"><span>Keep playing<small>When a show ends, start the next one in the list</small></span><input type="checkbox" id="setAuto"></label>
     </div>
     <div class="set-group">
@@ -1311,6 +1310,7 @@ function renderList(){
   if (state.mode === 'library') return renderLibrary(ul);
   const list = visible();
   $('#count').textContent = state.partial ? 'loading the rest…' : list.length ? `${list.length} show${list.length === 1 ? '' : 's'}` : '';
+  $('#miniCtx').textContent = list.length ? `${state.label} · ${list.length} show${list.length === 1 ? '' : 's'}` : state.label;
   if (!list.length){
     ul.innerHTML = `<li class="empty-list">${state.shows.length ? 'No shows match that filter. Clear it to see the whole list.' : state.mode === 'song' ? 'No set lists mention that song. Check the spelling, or pick a title from the suggestions.' : 'No recordings found here. Try another year.'}</li>`;
     return;
@@ -1769,7 +1769,7 @@ function createAudio(cors){
   a.addEventListener('pause', syncPlay);
   a.addEventListener('waiting', () => { if (a !== audio) return; setLoading(true); document.querySelectorAll('.trk.playing .n').forEach(n => { if (n.querySelector('.eqbars')) n.textContent = +n.closest('.trk').dataset.i + 1; }); });
   a.addEventListener('playing', () => { if (a !== audio) return; setLoading(false); errCount = 0; state.started = true; markPlayingRow(); syncPlay(); });
-  a.addEventListener('pause', () => { if (a === audio) setLoading(false); });
+  a.addEventListener('pause', () => { if (a !== audio) return; setLoading(false); if (pendingUnroute && !wantRouted()){ pendingUnroute = false; setTimeout(() => { if (audio.paused && audio.routed) swapAudio(false); }, 50); } });
   a.addEventListener('ended', () => { if (a === audio) onEnded(); });
   a.addEventListener('error', onAudioError);
   if (window.WebKitPlaybackTargetAvailabilityEvent){
@@ -1789,7 +1789,7 @@ const eqActive = () => eq.on && eq.gains.some(g => Math.abs(g) > .01);
 // iOS pauses processed audio when the screen locks, so on iPhone the music only goes through the EQ while it's in use
 const wantRouted = () => corsMode && eqAvailable && !state.car && !state.remote && !state.casting && (!IOS || eqActive() || tripIsOpen());
 document.addEventListener('visibilitychange', () => { if (!document.hidden && ctx && ctx.state !== 'running') ctx.resume(); });
-let pendingSwap = false, outEl = null;
+let pendingSwap = false, pendingUnroute = false, outEl = null;
 function tripIsOpen(){ try { return trip.open; } catch { return false; } }
 // Speakers and TVs: AirPlay in Safari, Cast in Chrome. The sound goes straight to the device, so the EQ and visuals rest meanwhile.
 let castAvail = false;
@@ -1915,7 +1915,11 @@ function ensureCtx(){
 }
 function routeElement(el){
   if (!graph || el.routed || el.crossOrigin !== 'anonymous') return false;
-  try { ctx.createMediaElementSource(el).connect(graph.input); el.routed = true; return true; } catch (e) { return false; }
+  try {
+    ctx.createMediaElementSource(el).connect(graph.input); el.routed = true;
+    const g = graph.pre.gain; g.cancelScheduledValues(ctx.currentTime); g.setValueAtTime(0, ctx.currentTime); applyEq();   // fade in, no click
+    return true;
+  } catch (e) { return false; }
 }
 // Swap the playing element (to add or drop the EQ path) without losing your place.
 function swapAudio(routed){
@@ -1932,10 +1936,14 @@ function swapAudio(routed){
 function ensureGraph(){
   const canSwap = !IOS || !navigator.userActivation || navigator.userActivation.isActive;
   if (!wantRouted()){
-    if (audio.routed){ if (canSwap) swapAudio(false); else pendingSwap = true; }
+    if (audio.routed){
+      if (!audio.paused && !state.remote && !state.casting) pendingUnroute = true;
+      else if (canSwap) swapAudio(false); else pendingSwap = true;
+    }
     if (ctx && ctx.state === 'suspended') ctx.resume();
     return;
   }
+  pendingUnroute = false;
   if (!ensureCtx()) return;
   if (ctx.state === 'suspended') ctx.resume();
   if (!audio.routed){ if (audio.crossOrigin === 'anonymous') routeElement(audio); else if (canSwap) swapAudio(true); }
@@ -2007,6 +2015,10 @@ function markPlayingRow(){
 function loadTrack(i){
   const q = state.queue; if (!q || i < 0 || i >= q.tracks.length) return;
   q.index = i;
+  if (pendingUnroute){   // switch players between songs, where nobody hears it
+    pendingUnroute = false;
+    if (audio.routed && !wantRouted()){ const old = audio; audio = createAudio(IOS && corsMode); old.pause(); old.removeAttribute('src'); old.load(); }
+  }
   if (state.casting){ castLoad(i, 0); q.buffered = true; updateNowPlaying(); renderTimeline(); syncTwin(); ['#play', '#mplay', '#seek', '#shPlay', '#shSeek', '#back15', '#fwd15'].forEach(s => $(s).disabled = false); if (state.meta && state.meta.id === q.id && state.tab === 'setlist') renderDetail(); return; }
   ensureGraph();
   const url = q.tracks[i].url;
@@ -2833,7 +2845,6 @@ async function openTrip(){
   if (state.queue){
     ensureGraph(); syncTwin();
     // iPhone (and Home Screen apps): start a fresh player wired to the visuals, picking up where the song is
-    if (IOS && !state.remote && !audio.paused && audio.routed && !trip.fresh){ trip.fresh = true; swapAudio(true); }
     if (ctx) ctx.resume();
   }
   document.body.classList.add('trip-open');
@@ -3164,6 +3175,7 @@ $('#sheetSet').onclick = openSettings;
 // TV mode: open it on a TV's web browser or while screen mirroring; the remote's arrows, OK, and media keys drive it
 const TV_UA = /SMART-TV|SmartTV|Tizen|Web0S|webOS|BRAVIA|AFTS|AFTM|CrKey|HbbTV|NetCast/i.test(navigator.userAgent);
 function tvUpdate(){
+  if (!$('#tvSong')) return;
   const q = state.queue;
   if (!q){ $('#tvSong').textContent = 'Nothing playing'; $('#tvDate').textContent = ''; $('#tvNext').textContent = 'Pick a show to start'; $('#tvList').innerHTML = ''; return; }
   const t = q.tracks[q.index], nx = q.tracks[q.index + 1], g = q.show;
@@ -3183,9 +3195,6 @@ async function openTV(){
   const k = $('#tvKeys'); k.classList.remove('gone'); setTimeout(() => k.classList.add('gone'), 7000);
   try { ['MediaPlayPause', 'MediaPlay', 'MediaPause', 'MediaFastForward', 'MediaRewind', 'MediaTrackNext', 'MediaTrackPrevious'].forEach(n => tizen.tvinputdevice.registerKey(n)); } catch {}
 }
-$('#setTv').onclick = () => { closeSettings(); setTimeout(openTV, 80); };
-$('#tvBtn').onclick = openTV;
-if (TV_UA){ $('#tvBtn').hidden = false; document.body.classList.add('tvdevice'); }
 // Remote and keyboard media keys, anywhere in the app
 document.addEventListener('keydown', e => {
   const k = e.key, c = e.keyCode;
@@ -3282,9 +3291,13 @@ const titleBeat = { avg: .15, last: 0, gaps: [], liveUntil: 0, anims: [] };
 const tbuf = new Uint8Array(1024);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function stomp(ibi){
-  const D = Math.max(.4, Math.min(1.1, ibi / .7)) * 1000, a = 1.8;   // timed so the slap lands on the next beat
+  const D = Math.max(.4, Math.min(1.1, ibi / .7)) * 1000, a = mq.matches ? 2.5 : 1.8;   // timed so the slap lands on the next beat; bigger on phones
   const sc = v => 1 + (v - 1) * a;
   titleBeat.anims.forEach(x => x.cancel()); titleBeat.anims = [];
+  // on phones the whole word dips a touch as the foot lands, so the beat reads at a glance
+  if (mq.matches) document.querySelectorAll('.word').forEach(w => titleBeat.anims.push(w.animate([
+    { transform: 'none', offset: 0 }, { transform: 'translateY(-1px)', offset: .55 }, { transform: 'translateY(2px) scaleY(.96)', offset: .72, easing: 'ease-out' }, { transform: 'none', offset: 1 }
+  ], { duration: D })));
   wordLayers.forEach(L => {
     titleBeat.anims.push(
       L.fw.animate(S_ROT.map((r, i) => ({ offset: STOMP_OFF[i], rotate: (r * a) + 'deg', easing: STOMP_EASE[i] })), { duration: D }),
@@ -3347,7 +3360,7 @@ $('#homeLink').addEventListener('click', e => { e.preventDefault(); goHome(); ha
 $('#homeLink2').addEventListener('click', e => { e.preventDefault(); goHome(); haptic(); });
 addEventListener('scroll', () => {
   const show = mq.matches && !document.body.classList.contains('viewing') && window.scrollY > $('.top').offsetHeight + 30;
-  const bar = $('#minibar'); if (bar.classList.contains('show') !== show){ bar.classList.toggle('show', show); if (show) window.relayoutWord(); }
+  const bar = $('#minibar'); if (bar.classList.contains('is-shown') !== show){ bar.classList.toggle('is-shown', show); if (show) window.relayoutWord(); }
 }, { passive: true });
 
 // First visits: a finger presses the dial, drags it one way and back (the dial follows), then taps a year
@@ -3383,6 +3396,8 @@ function dialDemo(){
   };
   requestAnimationFrame(frame);
 }
+
+if (IOS && !navigator.standalone && !matchMedia('(display-mode: standalone)').matches) document.documentElement.classList.add('ios-browser');
 
 /* ---------- boot ---------- */
 async function boot(){
