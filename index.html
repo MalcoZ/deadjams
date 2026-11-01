@@ -39,8 +39,8 @@
   }
   window.djPalettes=P.map(p=>p[0]);
   window.djApply=apply;
-  try{apply(JSON.parse(localStorage.getItem('taperoom:theme'))||'time',JSON.parse(localStorage.getItem('taperoom:palette'))||'Midnight');}
-  catch(e){apply('time','Midnight');}
+  try{apply(JSON.parse(localStorage.getItem('taperoom:theme'))||'system',JSON.parse(localStorage.getItem('taperoom:palette'))||'Midnight');}
+  catch(e){apply('system','Midnight');}
 })();
 </script>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -60,7 +60,7 @@
   --bg:#07102a; --surface:rgba(var(--t-deep),.55); --surface-solid:#0d1b40; --surface2:rgba(var(--t-hi),.06); --ink:#eaf1ff; --muted:#93a5cb;
   --line:rgba(var(--t-hi),.14); --accent:#8cc0ff; --accent-soft:rgba(var(--t-mid),.16); --accent-ink:#04102b; --teal:#6ee0d2; --gold:#f0c674;
   --hot:linear-gradient(135deg,var(--c1),var(--c2) 60%,var(--c3));
-  --shadow:0 24px 60px -30px rgba(0,0,0,.85);
+  --shadow:none;
   --font:"Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --player-h:88px;
 }
@@ -69,7 +69,7 @@
   color-scheme: light;
   --bg:#eef2fb; --surface:rgba(255,255,255,.74); --surface-solid:#ffffff; --surface2:rgba(var(--t-ink),.05); --ink:#0c1633; --muted:#55648a;
   --line:rgba(var(--t-ink),.13); --accent:#2457d6; --accent-soft:rgba(var(--t-mid),.1); --accent-ink:#ffffff; --teal:#0d8a7c; --gold:#c4860f;
-  --hot:linear-gradient(135deg,var(--c1),var(--c2) 60%,var(--c2)); --shadow:0 24px 60px -34px rgba(var(--t-ink),.35);
+  --hot:linear-gradient(135deg,var(--c1),var(--c2) 60%,var(--c2)); --shadow:none;
   --wm1:#163a9e;--wm2:var(--c1);--wm3:#5b3fd6;--wm4:#1f86c9;--wm5:#1b2f8a;--wmShadow:#ffffff;
 }
 @property --a{syntax:"<angle>";inherits:false;initial-value:0deg}
@@ -87,47 +87,48 @@ body::after{content:"";position:fixed;inset:0;z-index:15;pointer-events:none;opa
     linear-gradient(175deg,var(--b1) 0%,var(--b2) 50%,var(--b3) 100%);
   animation:drift 32s ease-in-out infinite}
 .word{display:inline-block;position:relative;margin:0;font-family:"Fraunces",Georgia,serif;font-weight:800;font-variation-settings:"SOFT" 100,"WONK" 1;
-  font-size:46px;line-height:1;--bar:2.143s;--foot-length:.55}
+  font-size:66px;line-height:1;--beat:.536s;--foot-length:.55}
 .word .t{display:block;white-space:nowrap;line-height:1.2;padding:.12em .1em;margin:-.12em -.1em;
   background-image:linear-gradient(100deg,var(--wm2),var(--wm3) 48%,var(--wm4));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
 .word .t.jbody,.word .fw{position:absolute;inset:-.12em -.1em;margin:0;pointer-events:none}
 .word .fw .t.foot{position:absolute;inset:0;margin:0}
 .word .probe{display:inline-block;width:0;height:0}
-.word .fw{animation:foot-lift-s var(--bar) infinite}
-.word .foot{animation:foot-squash-s var(--bar) infinite}
-.word .jbody{animation:body-settle-s var(--bar) infinite}
+.word .fw{animation:foot-lift-s var(--beat) infinite}
+.word .foot{animation:foot-squash-s var(--beat) infinite}
+.word .jbody{animation:body-settle-s var(--beat) infinite}
 .word.live .fw,.word.live .foot,.word.live .jbody{animation:none}
 @keyframes foot-lift-s{
-  0%,50%{rotate:0.0deg;animation-timing-function:ease-out}
-  2.88%,52.88%{rotate:-1.08deg;animation-timing-function:ease-in-out}
-  10.08%,60.08%{rotate:7.2deg;animation-timing-function:ease-out}
-  13.44%,63.44%{rotate:6.48deg;animation-timing-function:ease-in}
-  16.8%,66.8%{rotate:0.0deg;animation-timing-function:ease-out}
-  18.72%,68.72%{rotate:-0.864deg;animation-timing-function:ease-out}
-  21.12%,71.12%{rotate:0.216deg;animation-timing-function:ease-in-out}
-  24%,74%,100%{rotate:0.0deg;animation-timing-function:linear}
+  0%{rotate:0.0deg;animation-timing-function:ease-out}
+  12%{rotate:-2.025deg;animation-timing-function:ease-in-out}
+  42%{rotate:13.5deg;animation-timing-function:ease-out}
+  56%{rotate:12.15deg;animation-timing-function:ease-in}
+  70%{rotate:0.0deg;animation-timing-function:ease-out}
+  78%{rotate:-1.62deg;animation-timing-function:ease-out}
+  88%{rotate:0.405deg;animation-timing-function:ease-in-out}
+  100%{rotate:0.0deg;animation-timing-function:linear}
 }
 @keyframes foot-squash-s{
-  0%,50%{scale:1.0 1.0;animation-timing-function:ease-out}
-  2.88%,52.88%{scale:1.012 0.984;animation-timing-function:ease-in-out}
-  10.08%,60.08%{scale:0.984 1.02;animation-timing-function:ease-out}
-  13.44%,63.44%{scale:0.988 1.016;animation-timing-function:ease-in}
-  16.8%,66.8%{scale:1.04 0.944;animation-timing-function:ease-out}
-  18.72%,68.72%{scale:0.988 1.012;animation-timing-function:ease-out}
-  21.12%,71.12%{scale:1.004 0.996;animation-timing-function:ease-in-out}
-  24%,74%,100%{scale:1.0 1.0;animation-timing-function:linear}
+  0%{scale:1.0 1.0;animation-timing-function:ease-out}
+  12%{scale:1.0225 0.97;animation-timing-function:ease-in-out}
+  42%{scale:0.97 1.0375;animation-timing-function:ease-out}
+  56%{scale:0.9775 1.03;animation-timing-function:ease-in}
+  70%{scale:1.075 0.895;animation-timing-function:ease-out}
+  78%{scale:0.9775 1.0225;animation-timing-function:ease-out}
+  88%{scale:1.0075 0.9925;animation-timing-function:ease-in-out}
+  100%{scale:1.0 1.0;animation-timing-function:linear}
 }
 @keyframes body-settle-s{
-  0%,50%{scale:1.0 1.0;rotate:0.0deg;animation-timing-function:ease-out}
-  2.88%,52.88%{scale:1.0 0.992;rotate:0.0deg;animation-timing-function:ease-in-out}
-  10.08%,60.08%{scale:1.0 1.006;rotate:-0.32deg;animation-timing-function:ease-out}
-  13.44%,63.44%{scale:1.0 1.0048;rotate:-0.28deg;animation-timing-function:ease-in}
-  16.8%,66.8%{scale:1.008 0.984;rotate:0.08deg;animation-timing-function:ease-out}
-  18.72%,68.72%{scale:1.0 1.004;rotate:0.0deg;animation-timing-function:ease-out}
-  21.12%,71.12%{scale:1.0 1.0;rotate:0.0deg;animation-timing-function:ease-in-out}
-  24%,74%,100%{scale:1.0 1.0;rotate:0.0deg;animation-timing-function:linear}
+  0%{scale:1.0 1.0;rotate:0.0deg;animation-timing-function:ease-out}
+  12%{scale:1.0 0.985;rotate:0.0deg;animation-timing-function:ease-in-out}
+  42%{scale:1.0 1.0112;rotate:-0.6deg;animation-timing-function:ease-out}
+  56%{scale:1.0 1.009;rotate:-0.525deg;animation-timing-function:ease-in}
+  70%{scale:1.015 0.97;rotate:0.15deg;animation-timing-function:ease-out}
+  78%{scale:1.0 1.0075;rotate:0.0deg;animation-timing-function:ease-out}
+  88%{scale:1.0 1.0;rotate:0.0deg;animation-timing-function:ease-in-out}
+  100%{scale:1.0 1.0;rotate:0.0deg;animation-timing-function:linear}
 }
 @media (prefers-reduced-motion: reduce){.word .fw,.word .foot,.word .jbody{animation:none}}
+.home{display:inline-block;text-decoration:none;color:inherit;border-radius:10px}
 .wordmark{margin:0;line-height:0}
 .wordmark svg{display:block;height:56px;width:auto;overflow:visible}
 @media (prefers-reduced-motion: reduce){.bgfx{animation:none}}
@@ -146,9 +147,9 @@ button{cursor:pointer}
 /* Header */
 .top{display:flex;align-items:center;gap:20px;padding:calc(18px + env(safe-area-inset-top,0px)) 28px 10px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:12px;margin-right:auto}
-.mark{width:50px;height:50px;flex:0 0 auto;border-radius:12px;object-fit:cover;box-shadow:0 2px 10px rgba(2,6,23,.45)}
+.mark{width:50px;height:50px;flex:0 0 auto;border-radius:12px;object-fit:cover;}
 .mark[hidden]{display:none}
-.reel{width:50px;height:50px;flex:0 0 auto;overflow:visible;filter:drop-shadow(0 2px 3px rgba(2,6,23,.7));animation:reelspin 14s linear infinite;animation-play-state:paused}
+.reel{width:50px;height:50px;flex:0 0 auto;overflow:visible;animation:reelspin 14s linear infinite;animation-play-state:paused}
 body.playing .reel{animation-play-state:running}
 @keyframes reelspin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion: reduce){.reel{animation:none}}
@@ -161,7 +162,7 @@ body.playing .reel{animation-play-state:running}
 .btn{border:1px solid rgba(var(--t-hi),.38);background:rgba(var(--t-lo),.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:10px 17px;min-height:42px;border-radius:999px;font-weight:650;font-size:15px;color:var(--ink)}
 .btn:hover{border-color:rgba(var(--t-hi),.75);background:rgba(var(--t-lo),.6)}
 .btn[disabled]{opacity:.45;cursor:default}
-.btn.primary{background:var(--hot);color:var(--accent-ink);border-color:transparent;box-shadow:0 10px 30px -12px rgba(var(--t-mid),.7)}
+.btn.primary{background:var(--hot);color:var(--accent-ink);border-color:transparent;}
 .btn.primary:hover{filter:brightness(1.06)}
 
 /* Year dial — the signature element */
@@ -175,14 +176,14 @@ body.playing .reel{animation-play-state:running}
 .yr .ticks i:nth-child(3){height:18px;background:var(--muted)}
 .yr.decade .lbl{color:var(--ink)}
 .yr:hover .lbl{color:var(--ink)}
-.yr[aria-pressed="true"] .lbl{font-size:52px;font-weight:750;color:#eaf1ff;letter-spacing:-.04em;line-height:1;text-shadow:0 0 28px rgba(var(--t-mid),.55)}
+.yr[aria-pressed="true"] .lbl{font-size:52px;font-weight:750;color:#eaf1ff;letter-spacing:-.04em;line-height:1;}
 .yr[aria-pressed="true"]{width:128px}
-.yr[aria-pressed="true"] .ticks i:nth-child(3){height:30px;background:linear-gradient(var(--c3),var(--c1));width:3px;box-shadow:0 0 12px rgba(var(--t-mid),.8)}
+.yr[aria-pressed="true"] .ticks i:nth-child(3){height:30px;background:linear-gradient(var(--c3),var(--c1));width:3px;}
 @media (prefers-reduced-motion: reduce){.dial-track{scroll-behavior:auto}.yr .lbl{transition:none}}
 
 /* Layout */
 .layout{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:20px;padding:10px 28px 24px;align-items:start}
-.pane{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%)}
+.pane{background:var(--surface);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%)}
 .list-pane{position:sticky;top:12px;max-height:calc(100vh - var(--player-h) - 36px);display:flex;flex-direction:column;overflow:hidden}
 .list-head{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .list-head h2{margin:0;font-size:20px;font-weight:700;margin-right:auto;letter-spacing:-.01em}
@@ -207,13 +208,13 @@ body.playing .reel{animation-play-state:running}
 .tag{font-size:12px;font-weight:600;color:var(--accent);border:1px solid currentColor;border-radius:999px;padding:0 7px}
 .rec-meta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .rec-src{font-size:12px;color:var(--muted);opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.trk.match:not(.playing){background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.trk.match:not(.playing){background:var(--accent-soft);}
 .trk .yours{font-size:12px;color:var(--accent);margin-left:8px;font-weight:600;white-space:nowrap}
 #list{list-style:none;margin:0;padding:6px;overflow-y:auto;flex:1}
 .show{width:100%;display:grid;grid-template-columns:62px 1fr auto;gap:12px;align-items:center;text-align:left;
   border:0;background:none;padding:11px 10px;border-radius:12px}
 .show:hover{background:var(--surface2)}
-.show[aria-current="true"]{background:linear-gradient(90deg,rgba(var(--t-mid),.2),rgba(var(--t-mid),.12));box-shadow:inset 3px 0 0 var(--c1)}
+.show[aria-current="true"]{background:linear-gradient(90deg,rgba(var(--t-mid),.2),rgba(var(--t-mid),.12));}
 .s-date b{display:block;font-size:16px;font-weight:750;letter-spacing:-.01em;line-height:1.1;white-space:nowrap}
 .s-date small{color:var(--muted);font-size:13px}
 .s-venue{display:block;font-weight:550;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -237,7 +238,7 @@ body.playing .reel{animation-play-state:running}
 .pick{padding:36px 0 20px;max-width:46ch}
 .pick h2{margin:0 0 22px;font-size:clamp(40px,5vw,64px);font-weight:850;letter-spacing:-.045em;line-height:.98}
 .pick ol{list-style:none;margin:0;padding:0;counter-reset:s}
-.pick li{counter-increment:s;display:flex;gap:16px;align-items:baseline;padding:14px 0;font-size:18px;box-shadow:inset 0 -1px 0 var(--line)}
+.pick li{counter-increment:s;display:flex;gap:16px;align-items:baseline;padding:14px 0;font-size:18px;}
 .pick li::before{content:counter(s);font-size:28px;font-weight:850;color:var(--accent);min-width:24px;font-variant-numeric:tabular-nums}
 .welcome h2{font-size:clamp(40px,5vw,64px);font-weight:850;letter-spacing:-.045em;line-height:.98;letter-spacing:-.03em;line-height:1.1;margin:0 0 12px}
 .welcome p{color:var(--muted);margin:0 0 20px}
@@ -257,14 +258,15 @@ body.playing .reel{animation-play-state:running}
 .tab{border:0;background:none;padding:10px 14px;font-weight:650;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
 .tab[aria-selected="true"]{color:var(--ink);border-color:transparent;background:linear-gradient(90deg,var(--c1),var(--c3)) bottom/100% 2px no-repeat}
 .tracks{list-style:none;margin:0;padding:0}
-.trk{width:100%;display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;text-align:left;border:0;background:none;padding:10px 8px;border-radius:10px}
+.trk{width:100%;display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;text-align:left;border:0;background:none;padding:10px 8px;border-radius:0}
 .trk:hover{background:var(--surface2)}
 .trk .n{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;font-size:15px;font-weight:600}
-.tracks li + li .trk{box-shadow:inset 0 1px 0 var(--line)}
+.tracks li + li:not(.set-h){border-top:1px solid var(--line)}
+.tracks li.set-h + li{border-top:0}
 .trk .t{font-weight:500}
 .trk .len{color:var(--muted);font-variant-numeric:tabular-nums;font-size:14px}
 .trk.playing{background:linear-gradient(90deg,rgba(var(--t-mid),.2),rgba(var(--t-mid),.1))}
-.trk.playing .t,.trk.playing .n{color:var(--accent);font-weight:650}
+.trk.playing .t,.trk.playing .n{color:var(--accent)}
 .eqbars{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
 .eqbars i{width:3px;background:linear-gradient(var(--c3),var(--c1));animation:bounce .9s ease-in-out infinite}
 .eqbars i:nth-child(2){animation-delay:-.3s}.eqbars i:nth-child(3){animation-delay:-.6s}
@@ -294,7 +296,7 @@ body.playing .reel{animation-play-state:running}
 .ic{border:1px solid rgba(var(--t-hi),.22);background:rgba(var(--t-hi),.1);width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
 .ic:hover{background:rgba(var(--t-hi),.2);border-color:rgba(var(--t-hi),.5)}
 .ic svg{width:22px;height:22px;fill:currentColor}
-.ic.play{width:48px;height:48px;background:var(--hot);color:var(--accent-ink);box-shadow:0 8px 26px -8px rgba(var(--t-mid),.75)}
+.ic.play{width:48px;height:48px;background:var(--hot);color:var(--accent-ink);}
 .ic.play:hover{background:var(--hot);filter:brightness(1.07)}
 .ic.play svg{width:24px;height:24px}
 .ic[disabled]{opacity:.45;cursor:default}
@@ -313,7 +315,7 @@ input[type=range].bar::-moz-range-thumb{width:14px;height:14px;border-radius:50%
 
 /* EQ panel */
 .eq{backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);background:rgba(var(--t-deep),.94)!important;position:fixed;right:24px;bottom:calc(var(--player-h) + 12px + env(safe-area-inset-bottom,0px));z-index:21;width:min(520px,calc(100vw - 24px));
-  background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px 16px}
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px 16px}
 .eq[hidden]{display:none}
 .eq-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .eq-head h3{margin:0;font-size:17px;margin-right:auto}
@@ -331,7 +333,7 @@ input[type=range].bar::-moz-range-thumb{width:14px;height:14px;border-radius:50%
 .eq.off .bands{opacity:.45}
 
 .toast{position:fixed;z-index:70;left:50%;bottom:calc(var(--player-h) + 18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);
-  padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(520px,90vw);box-shadow:var(--shadow)}
+  padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(520px,90vw);}
 .toast[hidden]{display:none}
 
 
@@ -351,14 +353,14 @@ input[type=range].bar::-moz-range-thumb{width:14px;height:14px;border-radius:50%
 [data-theme="light"] .ic.play,[data-theme="light"] .ic.play:hover{background:var(--hot);color:#fff;border:0}
 [data-theme="light"] .ic.play svg{fill:#fff}
 [data-theme="light"] .eq{background:rgba(255,255,255,.96)!important}
-[data-theme="light"] .yr[aria-pressed="true"] .lbl{color:var(--ink);text-shadow:0 0 24px rgba(var(--t-mid),.25)}
+[data-theme="light"] .yr[aria-pressed="true"] .lbl{color:var(--ink);}
 [data-theme="light"] .yr .ticks i{background:rgba(var(--t-ink),.18)}
 [data-theme="light"] .yr .ticks i:nth-child(3){background:rgba(var(--t-ink),.4)}
 [data-theme="light"] .tab{color:var(--muted)}
 [data-theme="light"] .chip{background:rgba(var(--t-mid),.05);border-color:rgba(var(--t-mid),.25)}
 [data-theme="light"] .chip[aria-pressed="true"]{background:var(--hot);color:#fff;border-color:transparent}
 [data-theme="light"] .badge{background:rgba(13,138,124,.08)}
-[data-theme="light"] .reel{filter:drop-shadow(0 2px 3px rgba(var(--t-ink),.25))}
+[data-theme="light"] .reel{}
 [data-theme="light"] .tripbtn{color:#fff;background:linear-gradient(135deg,var(--c1),var(--c4));border-color:transparent}
 [data-theme="light"] .toast{background:#0c1633;color:#fff}
 @media (max-width:900px){
@@ -398,12 +400,12 @@ body.trip-open{overflow:hidden}
 .trip[hidden]{display:none}
 .trip-scrim{position:absolute;inset:0;background:rgba(2,6,20,.74);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;animation:tfade .3s ease}
 .trip-box{position:relative;width:min(1200px,calc(100vw - 56px));height:min(780px,calc(100vh - 110px));height:min(780px,calc(100svh - 110px));border-radius:28px;overflow:hidden;background:#030612;
-  border:1px solid rgba(var(--t-hi),.24);box-shadow:0 40px 120px -30px rgba(0,0,0,.9),0 0 90px -30px rgba(var(--t-mid),.55);animation:tin .38s cubic-bezier(.2,.8,.2,1)}
+  border:1px solid rgba(var(--t-hi),.24);animation:tin .38s cubic-bezier(.2,.8,.2,1)}
 .trip-box canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity .35s ease}
 .trip-box canvas.fade{opacity:0}
 .trip-x{position:absolute;top:14px;right:14px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;padding:0;cursor:pointer;
   color:rgb(var(--cxl,200,220,255));border:1.5px solid rgba(var(--cx,120,160,255),.85);background-image:linear-gradient(rgba(var(--cx,120,160,255),.14),rgba(var(--cx,120,160,255),.14));background:rgba(3,6,18,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  box-shadow:0 0 16px -6px rgba(var(--cx,120,160,255),.9)}
+  }
 .trip-x svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
 .trip-x:hover{background:rgba(3,6,18,.65)}
 .trip-need{position:absolute;left:50%;top:22px;translate:-50% 0;margin:0;max-width:calc(100% - 140px);text-align:center;font-size:14px;font-weight:600;
@@ -436,7 +438,7 @@ body.trip-open{overflow:hidden}
 .tracks li{display:flex;align-items:center}
 .tracks li .trk{flex:1;min-width:0}
 .seg-arrow{color:var(--accent);font-weight:800;margin-left:8px}
-.trk.suite .n{box-shadow:inset -2px 0 0 var(--accent)}
+.trk.suite .n{}
 .stroke{fill:none!important;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .heart{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:0;background:none;color:var(--muted);display:grid;place-items:center;padding:0}
 .heart svg{width:20px;height:20px}
@@ -488,7 +490,7 @@ body.trip-open{overflow:hidden}
 .settings[hidden]{display:none}
 .set-scrim{position:absolute;inset:0;background:rgba(2,6,20,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:tfade .25s ease}
 .set-panel{position:relative;width:min(460px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;padding:8px 20px 20px;border-radius:24px;
-  background:var(--surface-solid);border:1px solid var(--line);box-shadow:var(--shadow);animation:tin .3s cubic-bezier(.2,.8,.2,1)}
+  background:var(--surface-solid);border:1px solid var(--line);animation:tin .3s cubic-bezier(.2,.8,.2,1)}
 .set-head{display:flex;align-items:center;justify-content:space-between;position:sticky;top:-8px;padding:14px 0 10px;background:var(--surface-solid);z-index:1}
 .set-head h2{margin:0;font-size:24px;font-weight:850;letter-spacing:-.03em}
 .set-x{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--surface2);color:var(--ink)}
@@ -568,7 +570,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   button{touch-action:manipulation}
   .top{padding:calc(12px + env(safe-area-inset-top,0px)) 12px 2px;gap:10px}
   .wordmark svg{height:44px}
-  .word{font-size:38px}
+  .word{font-size:48px}
   .reel,.mark{width:40px;height:40px}
   .brand p{display:none}
   .tools{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -620,7 +622,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   .player{grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px)) 16px}
   .center{display:none}
   .mini-prog{display:block;position:absolute;left:0;right:0;top:0;height:3px;background:var(--line)}
-  .mini-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--c1),var(--c2),var(--c3));box-shadow:0 0 10px rgba(var(--t-mid),.8)}
+  .mini-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--c1),var(--c2),var(--c3));}
   .np{padding:6px 0}
   .right{gap:2px}
   .right .vol,.right .volic{display:none}
@@ -649,7 +651,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
 <div class="bgfx" aria-hidden="true"></div>
 <header class="top">
   <div class="brand">
- <h1 class="word" id="wordmark" aria-label="deadjams">deadjams</h1>
+ <a href="./" class="home" id="homeLink" aria-label="deadjams, go to the start"><h1 class="word" id="wordmark" aria-label="deadjams">deadjams</h1></a>
   </div>
   <div class="tools">
     <form class="search" id="songForm" role="search">
@@ -794,7 +796,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     <div class="set-group">
       <h3>Appearance</h3>
       <div class="seg" id="themeSeg" role="group" aria-label="Appearance">
-        <button data-v="time">Time of day</button><button data-v="system">Match device</button><button data-v="light">Light</button><button data-v="dark">Dark</button>
+        <button data-v="system">Match device</button><button data-v="light">Light</button><button data-v="dark">Dark</button>
       </div>
     </div>
     <div class="set-group">
@@ -2090,9 +2092,11 @@ function randomTrip(){
   return { palette: Math.random(), terrain: rand(.05, .95), backdrop: rand(.2, 1), glow: rand(.3, .95), gravity: rand(0, .9),
     dream: rand(0, .9), flow: rand(.25, .9), turb: rand(.15, 1), trails: rand(.2, .97), ripples: rand(.05, .95),
     // how each roll answers the music
-    sym: pick([0, 0, 0, 3, 4, 5, 6, 8]), mirror: Math.random() < .25 ? 1 : 0,
-    punch: rand(.01, .09), flash: rand(.05, .5), twist: rand(0, 3) * (Math.random() < .5 ? -1 : 1),
-    shock: rand(0, 1), hueJump: pick([0, 0, .0015, .004, .008]), splash: rand(.4, 1.6), splashSize: rand(25, 140), ring: rand(0, 1.4) };
+    sym: Math.random() < .1 ? pick([3, 4, 5, 6, 8]) : 0, mirror: Math.random() < .05 ? 1 : 0,
+    punch: rand(.035, .13), flash: rand(.18, .65), twist: rand(0, 1.5) * (Math.random() < .5 ? -1 : 1),
+    shock: rand(0, .5), hueJump: pick([0, 0, 0, .0015, .003]), splash: rand(.4, 1.4), splashSize: rand(25, 140), ring: rand(0, .6),
+    // what your finger or mouse does, as in Driftfield: stir most often, the swirl only now and then
+    touchMode: (r => r < .4 ? 0 : r < .62 ? 2 : r < .8 ? 3 : r < .94 ? 4 : 1)(Math.random()), brush: rand(.15, .6) };
 }
 function derive(){
   const P = trip.P, c = trip.cur, t = P.terrain, gv = P.gravity, dd = P.dream, m = x => .4 + 1.2 * x;
@@ -2182,7 +2186,7 @@ vec3 pal(float x){x=fract(x+uHue)*4.;float i=floor(x),f=smoothstep(0.,1.,fract(x
   vec3 a=i<1.?uP0:i<2.?uP1:i<3.?uP2:uP3;vec3 c=i<1.?uP1:i<2.?uP2:i<3.?uP3:uP0;return mix(a,c,f);}
 float luma(vec3 c){return dot(c,vec3(.299,.587,.114));}`;
 const SIM_FS = `uniform sampler2D uPrev;uniform vec2 uTexel;
-uniform vec4 uSpawn[4];uniform vec3 uSpawnCol[4];
+uniform vec4 uSpawn[4];uniform vec3 uSpawnCol[4];uniform vec4 uPtr[8];uniform float uBrush,uTM,uTouchK;
 uniform float uMorph,uGlow,uDensity,uChaos,uDecay,uFloor,uStep,uInk,uPull,uSpin,uStars,uBeat,uBeatR,uRing,uHit,uSplash,uSplashSize,uHitHue;uniform vec2 uHitPos;
 void main(){
   vec2 uv=v;vec2 as=vec2(uAspect,1.);vec2 p=(uv-.5)*as;float t=uTime;
@@ -2190,7 +2194,16 @@ void main(){
   vec2 q=vec2(fbm(p*1.3+vec2(0.,t*.04)),fbm(p*1.3+vec2(5.2,1.3)-t*.035));
   vec2 pp=p*fr+q*(1.+uChaos*3.)+t*.03;float e=.02;
   float n0=fbm(pp),nx=fbm(pp+vec2(e,0.)),ny=fbm(pp+vec2(0.,e));
-  vec2 flow=vec2(ny-n0,n0-nx)/e*(.0005+uChaos*.0026)*uStep;
+  vec2 flow=vec2(ny-n0,n0-nx)/e*(.0005+uChaos*.0026);
+  float bs=sqrt(28./uBrush);float paint=0.;
+  for(int i=0;i<8;i++){vec4 pt=uPtr[i];vec2 d=p-pt.xy;float f=exp(-dot(d,d)*uBrush);float sp=length(pt.zw);float on=min(1.,sp*60.);
+    if(uTM<.5) flow+=pt.zw*f*.5+vec2(-d.y,d.x)*f*sp*1.5/bs;
+    else if(uTM<1.5) flow+=vec2(-d.y,d.x)*f*on*(.25+sp*2.)*uTouchK/bs;
+    else if(uTM<2.5) flow+=pt.zw*f*.2;
+    else if(uTM<3.5) flow-=d*f*on*.22*uTouchK;
+    else {flow+=pt.zw*f*.25;paint+=f*on;}
+  }
+  flow*=uStep;
   float ang=uSpin*.004*uStep;float z=1.+uPull*.004*uStep;float ca=cos(ang),sa=sin(ang);
   vec2 suv=(mat2(ca,-sa,sa,ca)*p*z-flow)/as+.5;
   vec3 prev=texture2D(uPrev,suv).rgb*.6+(texture2D(uPrev,suv+vec2(uTexel.x,0.)).rgb+texture2D(uPrev,suv-vec2(uTexel.x,0.)).rgb+
@@ -2206,6 +2219,7 @@ void main(){
   float val=smoothstep(.3,.72,a0)*w0+a1*w1*.9+a2*w2;
   float ink=smoothstep(.6-.1*uDensity,.88,val)*(.028+.045*uGlow)*uStep*uInk;
   vec3 col=prev+pal(val*1.1+r*.35+q.y*.6+t*.01)*ink;
+  col+=pal(t*.03+q.x*.8)*min(paint,1.)*.007*uStep*min(uTouchK,1.);
   // each beat sends a ring of light outward from the middle
   col+=pal(t*.05+r*.8)*exp(-pow((r-uBeatR)*16.,2.))*uBeat*.07*uRing;
   // every transient splashes fresh color somewhere new
@@ -2222,7 +2236,8 @@ void main(){
   col+=step(1.-.0012*(.3+uDensity),h)*(.05+.06*uGlow)*uStep*uStars*vec3(.9,.95,1.);
   gl_FragColor=vec4(min(col,vec3(4.)),1.);
 }`;
-const DISPLAY_FS = `uniform sampler2D uImg;uniform float uImgAmt,uImgAsp;
+const DISPLAY_FS = `uniform vec4 uTouch[6];uniform float uTouchAmp;
+uniform sampler2D uImg;uniform float uImgAmt,uImgAsp;
 vec2 cover(vec2 uv,float ia){float s=uAspect/ia;vec2 c=uv-.5;if(s>1.)c.y/=s;else c.x*=s;return c+.5;}
 uniform sampler2D uSim;uniform vec2 uTexel;uniform float uGlow,uRipple,uSat,uExpo,uKick,uPunch,uFlash,uSym,uMirror,uShock,uHit,uHitR;uniform vec3 uBack;uniform vec2 uHitPos;
 void main(){
@@ -2235,6 +2250,10 @@ void main(){
   kp+=sd/sl*sin((sl-uHitR)*55.)*exp(-abs(sl-uHitR)*9.)*uHit*uShock*.018;
   uv=kp/vec2(uAspect,1.)+.5;
   vec2 pr=(uv-.5)*vec2(uAspect,1.);
+  vec2 tdir=vec2(0.);
+  for(int i=0;i<6;i++){vec4 tc=uTouch[i];vec2 d=pr-tc.xy;float dl=length(d)+1e-3;float ring=tc.z*.5;
+    tdir+=d/dl*sin((dl-ring)*75.)*exp(-abs(dl-ring)*12.)*exp(-tc.z*1.5)*tc.w;}
+  uv+=tdir*.007*uTouchAmp/vec2(uAspect,1.);
   vec2 rw=vec2(fbm(pr*2.6+vec2(uTime*.12,0.)),fbm(pr*2.6+vec2(5.,-uTime*.1)));
   vec2 rdir=vec2(sin(rw.x*16.+uTime*1.2),cos(rw.y*16.-uTime))*.7;
   uv+=rdir*uRipple*.007/vec2(uAspect,1.);
@@ -2401,13 +2420,13 @@ function tripLoop(now){
   // a new roll eases in over a couple of seconds
   const k = 1 - Math.exp(-dt * 1.6);
   KEYS.forEach(key => { trip.P[key] += (trip.T[key] - trip.P[key]) * k; });
-  ['punch', 'flash', 'twist', 'shock', 'splash', 'splashSize', 'ring', 'hueJump'].forEach(key => { trip.P[key] = (trip.P[key] ?? trip.T[key] ?? 0) + ((trip.T[key] ?? 0) - (trip.P[key] ?? 0)) * k; });
+  ['punch', 'flash', 'twist', 'shock', 'splash', 'splashSize', 'ring', 'hueJump', 'brush'].forEach(key => { trip.P[key] = (trip.P[key] ?? trip.T[key] ?? 0) + ((trip.T[key] ?? 0) - (trip.P[key] ?? 0)) * k; });
   derive();
   readLevels(dt);
   const L = trip.L, c = trip.cur, cv = $('#tripCv');
   const T = trip.P;
-  const drive = .22 + L.bass * 3.2 + L.beat * 2.6 + L.hit * 1.4;   // barely drifts alone; the music sets the pace
-  trip.t += dt * c.speed * (.25 + L.bass * 2 + L.beat * 1.4);
+  const drive = .1 + L.bass * 5 + L.beat * 4.5 + L.hit * 2.4;   // nearly still alone; the music sets the pace
+  trip.t += dt * c.speed * (.1 + L.bass * 3 + L.beat * 2.2);
   const step = Math.min(2.5, Math.max(.25, dt * 60)) * c.speed * drive;
   // simulate
   gl.bindFramebuffer(gl.FRAMEBUFFER, simB.fb); gl.viewport(0, 0, simB.w, simB.h);
@@ -2417,12 +2436,17 @@ function tripLoop(now){
   P.v2('uTexel', 1 / simB.w, 1 / simB.h);
   P.f('uMorph', c.morph); P.f('uDensity', c.density); P.f('uChaos', c.chaos * (1 + L.mid * 1.4));
   P.f('uGlow', c.glow); P.f('uDecay', Math.pow(.86 + (.993 - .86) * c.trail, step)); P.f('uFloor', floorAmt * step);
-  P.f('uStep', step); P.f('uInk', c.ink * (1 + L.bass * 2.8 + L.beat * 2.2));
-  P.f('uPull', c.pull + L.beat * 4 + L.bass * 1.2); P.f('uSpin', c.spin * (1 + L.mid * 2) + L.mid * .4 + L.beat * T.twist);
+  P.f('uStep', step); P.f('uInk', c.ink * (.8 + L.bass * 4.2 + L.beat * 3.6));
+  P.f('uPull', c.pull * .6 + L.beat * 6.5 + L.bass * 1.8); P.f('uSpin', c.spin * (1 + L.mid * 2) + L.mid * .4 + L.beat * T.twist);
   P.f('uHue', trip.hue || 0); P.f('uRing', T.ring); P.f('uHit', L.hit || 0); P.f('uSplash', T.splash); P.f('uSplashSize', T.splashSize);
   P.f('uHitHue', L.hh || 0); P.v2('uHitPos', L.hx || 0, L.hy || 0);
   for (let i = 0; i < 4; i++) spawnU[i * 4 + 2] += dt * (.7 + L.bass * 1.2);
   P.v4a('uSpawn[0]', spawnU); P.v3a('uSpawnCol[0]', spawnCol);
+  updatePointer(dt);
+  const tm = trip.T.touchMode || 0, gv = trip.P.gravity, dd = trip.P.dream;
+  const tk = [1, .6 + gv, .5 + dd, .5 + gv, .4 + .3 * trip.P.glow][tm] * .7;   // about 70% of Driftfield's strength
+  trip.touchK = tk;
+  P.v4a('uPtr[0]', ptrU); P.f('uBrush', Math.max(18, 230 - 200 * (trip.P.brush || .3))); P.f('uTM', tm); P.f('uTouchK', tk);
   P.f('uStars', Math.min(1.5, L.high * 2)); P.f('uBeat', L.beat); P.f('uBeatR', Math.min(1.2, (now / 1000 - trip.beatClock) * .9));
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   const t2 = simA; simA = simB; simB = t2;
@@ -2432,8 +2456,9 @@ function tripLoop(now){
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, simA.tex); P.i('uSim', 0);
   P.f('uAspect', cv.width / cv.height); P.f('uTime', trip.t); setPal(P);
   P.v2('uTexel', 1 / simA.w, 1 / simA.h);
-  P.f('uGlow', c.glow * (1 + L.high * .9)); P.f('uRipple', c.ripple + L.mid * .8); P.f('uSat', c.sat); P.f('uExpo', 1.15 + L.bass * .45);
+  P.f('uGlow', c.glow * (1 + L.high * .9)); P.f('uRipple', c.ripple * .6 + L.mid * 1.5); P.f('uSat', c.sat); P.f('uExpo', 1.15 + L.bass * .45);
   P.f('uKick', L.beat); P.v3('uBack', c.back); P.f('uHue', trip.hue || 0);
+  P.v4a('uTouch[0]', touchU); P.f('uTouchAmp', (trip.T.touchMode === 2 ? 1.6 * (trip.touchK || 1) : .5) * .7);
   // photo envelope: every 40 to 80 seconds, fades in over 4s, lingers 8s, fades out over 4s
   let imgAmt = 0;
   if (trip.img && store.get('photos', true)){
@@ -2479,7 +2504,7 @@ async function openTrip(){
   tripResize();
   if (store.get('photos', true) && !trip.img) nextPhoto();
   const saved = store.get('trip2', null);
-  applyTrip(saved && 'sym' in saved ? saved : randomTrip());
+  applyTrip(saved && 'touchMode' in saved ? saved : randomTrip());
   trip.beatClock = performance.now() / 1000;
   syncTrip();
   trip.last = 0; trip.raf = requestAnimationFrame(tripLoop);
@@ -2652,6 +2677,37 @@ function rollDice(){
   applyTrip(randomTrip());
 }
 $('#bDice').addEventListener('click', rollDice);
+// Pointer effects from Driftfield: moving across the visuals stirs, ripples, pulls, paints, or (rarely) swirls them
+const ptrBase = new Float32Array(32), ptrU = new Float32Array(32), ptrAge = new Float32Array(8).fill(99), touchU = new Float32Array(24);
+for (let i = 0; i < 6; i++) touchU[i * 4 + 2] = 99;
+let ptrI = 0, touchI = 0, lastPtr = null, lastPushT = 0, lastTouchT = 0;
+function updatePointer(dt){
+  for (let i = 0; i < 8; i++){
+    ptrAge[i] += dt; const f = Math.max(0, 1 - ptrAge[i] / 1.2), j = i * 4;
+    ptrU[j] = ptrBase[j]; ptrU[j + 1] = ptrBase[j + 1]; ptrU[j + 2] = ptrBase[j + 2] * f; ptrU[j + 3] = ptrBase[j + 3] * f;
+  }
+  for (let i = 0; i < 6; i++) touchU[i * 4 + 2] += dt;
+}
+function boxPoint(e){
+  const r = $('#tripBox').getBoundingClientRect();
+  return [((e.clientX - r.left) / r.width - .5) * (r.width / r.height), .5 - (e.clientY - r.top) / r.height];
+}
+const tripCv = $('#tripCv');
+tripCv.addEventListener('pointerdown', e => { lastPtr = boxPoint(e); const j = touchI * 4; touchU.set([lastPtr[0], lastPtr[1], 0, .8], j); touchI = (touchI + 1) % 6; lastTouchT = performance.now(); });
+tripCv.addEventListener('pointermove', e => {
+  const p = boxPoint(e), now = performance.now();
+  if (!lastPtr){ lastPtr = p; return; }
+  if (now - lastPushT < 16) return;
+  let vx = (p[0] - lastPtr[0]) * .6, vy = (p[1] - lastPtr[1]) * .6;   // gentler than Driftfield
+  const l = Math.hypot(vx, vy); if (l > .04){ vx *= .04 / l; vy *= .04 / l; }
+  if (l > .0005){
+    const i = ptrI; ptrI = (ptrI + 1) % 8; ptrBase.set([p[0], p[1], vx, vy], i * 4); ptrAge[i] = 0;
+    if (now - lastTouchT > (trip.T && trip.T.touchMode === 2 ? 60 : 160)){ const j = touchI * 4; touchU.set([p[0], p[1], 0, Math.min(.8, .3 + l * 20)], j); touchI = (touchI + 1) % 6; lastTouchT = now; }
+  }
+  lastPushT = now; lastPtr = p;
+});
+['pointerleave', 'pointercancel', 'pointerup'].forEach(ev => tripCv.addEventListener(ev, e => { if (e.pointerType !== 'mouse' || ev === 'pointerleave') lastPtr = null; }));
+tripCv.style.touchAction = 'none';
 $('#tripX').addEventListener('click', requestCloseTrip);
 $('#tripScrim').addEventListener('click', requestCloseTrip);
 $('#trip').addEventListener('click', e => { if (e.target === e.currentTarget) requestCloseTrip(); });
@@ -2714,7 +2770,8 @@ $('#carSurprise').onclick = surprise;
 
 /* ---------- settings ---------- */
 function applyTheme(){
-  const t = store.get('theme', 'time'), pal = store.get('palette', 'Midnight');
+  let t = store.get('theme', 'system'); if (t === 'time') t = 'system';
+  const pal = store.get('palette', 'Midnight');
   window.djApply(t, pal);
   document.querySelectorAll('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === t));
   document.querySelectorAll('#palSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === pal));
@@ -2722,7 +2779,6 @@ function applyTheme(){
 $('#palSeg').innerHTML = window.djPalettes.map(n => `<button data-v="${n}">${n}</button>`).join('');
 $('#palSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; store.set('palette', b.dataset.v); applyTheme(); haptic(); };
 // time of day: check every minute, and whenever the app comes back to the front
-setInterval(() => { if (store.get('theme', 'time') === 'time') applyTheme(); }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) applyTheme(); });
 matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme);
 function openSettings(){
@@ -2826,7 +2882,7 @@ const titleBeat = { avg: .15, last: 0, gaps: [], liveUntil: 0, anims: [] };
 const tbuf = new Uint8Array(1024);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function stomp(ibi){
-  const D = Math.max(.45, Math.min(1.3, ibi / .7)) * 1000, a = 1;   // timed so the slap lands on the next kick
+  const D = Math.max(.4, Math.min(1.1, ibi / .7)) * 1000, a = 1.3;   // timed so the slap lands on the next beat
   const sc = v => 1 + (v - 1) * a;
   titleBeat.anims.forEach(x => x.cancel()); titleBeat.anims = [];
   wordLayers.forEach(L => {
@@ -2846,17 +2902,40 @@ function titleLoop(now){
   let sum = 0; for (let k = lo; k <= hi; k++) sum += tbuf[k];
   const b = sum / ((hi - lo + 1) * 255), t = now / 1000;
   titleBeat.avg = titleBeat.avg * .95 + b * .05;
-  if (b > titleBeat.avg * 1.2 + .035 && b > .22 && t - titleBeat.last > .3){
-    const gap = t - titleBeat.last;
-    if (gap < 1.3){ titleBeat.gaps.push(gap); if (titleBeat.gaps.length > 8) titleBeat.gaps.shift(); }
-    titleBeat.last = t;
-    const sorted = titleBeat.gaps.slice().sort((x, y) => x - y);
-    const ibi = sorted.length >= 3 ? sorted[sorted.length >> 1] : .536;   // 112 bpm until the tempo is known
-    wordHost.classList.add('live'); titleBeat.liveUntil = now + 2500;
-    stomp(ibi);
-  } else if (now > titleBeat.liveUntil) wordHost.classList.remove('live');
+  const tb = titleBeat;
+  if (b > tb.avg * 1.2 + .035 && b > .22 && t - tb.last > .28){
+    const gap = t - tb.last;
+    if (gap < 1.6){ tb.gaps.push(gap); if (tb.gaps.length > 8) tb.gaps.shift(); }
+    tb.last = t;
+    const sorted = tb.gaps.slice().sort((x, y) => x - y);
+    let ibi = sorted.length >= 3 ? sorted[sorted.length >> 1] : .536;   // 112 bpm until the tempo is known
+    while (ibi > .75) ibi /= 2;      // kicks often land on 1 and 3: tap the quarter notes in between too
+    while (ibi < .33) ibi *= 2;
+    tb.ibi = ibi;
+    wordHost.classList.add('live'); tb.liveUntil = now + 2500;
+    if (t - (tb.lastStomp || 0) > ibi * .5){ stomp(ibi); tb.lastStomp = t; }
+    tb.next = t + ibi;               // re-lock the beat clock to this kick
+  } else if (tb.ibi && t < tb.last + 2.5 && t >= (tb.next || Infinity)){
+    stomp(tb.ibi); tb.lastStomp = t; tb.next += tb.ibi;   // keep tapping quarter notes between kicks
+  } else if (now > tb.liveUntil) wordHost.classList.remove('live');
 }
 requestAnimationFrame(titleLoop);
+
+// The title takes you back to the start: close any overlay and the open show, and return to the year list
+function goHome(){
+  if (trip.open) closeTrip();
+  if (!$('#settings').hidden) hideSettings();
+  if (!$('#sheet').hidden) hideSheet();
+  if (!$('#car').hidden) hideCar();
+  nav.trip = nav.settings = nav.sheet = nav.car = nav.show = false;
+  state.current = null; state.sourceId = null; state.meta = null;
+  document.body.classList.remove('viewing');
+  history.replaceState(null, '', location.pathname);
+  if (state.mode !== 'year') loadYear(state.year); else { renderList(); markDial(); }
+  renderDetail(); fillSotd();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+$('#homeLink').addEventListener('click', e => { e.preventDefault(); goHome(); haptic(); });
 
 /* ---------- boot ---------- */
 async function boot(){
