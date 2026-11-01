@@ -599,6 +599,19 @@ body.trip-open{overflow:hidden}
 .tv-keys.gone{opacity:0}
 @media (max-width:900px){.tv-list{display:none}.tv-now{max-width:88vw}}
 .hdr-search,#topSpacer{display:none}
+@media (min-width:901px){
+  .top{position:fixed;left:0;right:0;top:0;z-index:12;
+    padding:calc(18px - 9px * var(--shrink,0) + env(safe-area-inset-top,0px)) 28px calc(12px - 4px * var(--shrink,0));
+    background:color-mix(in srgb,var(--bg) calc(35% + 50% * var(--shrink,0)),transparent);
+    -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);
+    box-shadow:inset 0 -1px 0 rgba(var(--t-hi),calc(.12 * var(--shrink,0)))}
+  .brand{height:calc(76px - 30px * var(--shrink,0));display:flex;align-items:center}
+  .top .home{transform:scale(calc(1 - .35 * var(--shrink,0)));transform-origin:left center}
+  .tools{transform:scale(calc(1 - .06 * var(--shrink,0)));transform-origin:right center}
+  #topSpacer{display:block;height:var(--hdrFull,112px)}
+  .list-pane{top:calc(var(--hdrMin,64px) + 12px);max-height:calc(100vh - var(--player-h) - var(--hdrMin,64px) - 36px)}
+}
+.top::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:100vh;background:var(--bg);pointer-events:none}
 .set-credit summary{cursor:pointer;font-weight:650;color:var(--ink)}
 .set-credit ul{margin:8px 0 0;padding-left:18px}
 .set-credit li{margin:0 0 6px}
@@ -718,7 +731,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     background:color-mix(in srgb,var(--bg) calc(55% + 25% * var(--shrink,0)),transparent);
     -webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);
     box-shadow:inset 0 -1px 0 rgba(var(--t-hi),calc(.1 * var(--shrink,0)))}
-  html.ios-browser .top{--pill:40px}
+  html.ios-browser .top{--pill:0px}
   .brand{display:flex;align-items:center;justify-content:space-between;width:100%;height:calc(46px - 16px * var(--shrink,0));padding:0}
   .top .home{transform:scale(calc(1 - .4 * var(--shrink,0)));transform-origin:left center}
   .hdr-search{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(var(--t-hi),.32);background:rgba(var(--t-hi),.08);color:var(--ink);padding:0;
@@ -1242,20 +1255,21 @@ async function loadYear(y, keepDetail){
   }
   await loadList(fetchFull, () => quickPage(q));
 }
-async function searchSong(q){
+async function searchSong(q, year = null){
   if ($('#sotdMobile')) $('#sotdMobile').innerHTML = '';
-  state.mode = 'song'; state.song = q; state.label = q; state.verLen = {}; $('#sort option[value="longest"]').hidden = false;
+  state.mode = 'song'; state.song = q; state.label = year ? `${q}, ${year}` : q; state.verLen = {}; state.noMatch = {}; $('#sort option[value="longest"]').hidden = false;
   state.sort = 'rating'; state.sortAuto = true; $('#sort').value = 'rating';
   state.filter = ''; $('#filter').value = '';
   markDial();
   if (document.body.classList.contains('viewing') && mq.matches) closeDetail();
   const phrase = q.replace(/["\\]/g, '');
-  const key = norm(phrase);
-  const sq = `collection:GratefulDead AND ("${phrase}")`;
+  const key = norm(phrase) + (year ? '|' + year : '');
+  const yq = year ? ` AND year:${year}` : '';
+  const sq = `collection:GratefulDead AND ("${phrase}")${yq}`;
   const words = phrase.split(/\s+/).map(w => w.replace(/[^\w]/g, '')).filter(w => w.length > 1);
-  const loose = words.length ? `collection:GratefulDead AND (${words.join(' AND ')})` : sq;
+  const loose = words.length ? `collection:GratefulDead AND (${words.join(' AND ')})${yq}` : sq;
   await loadList(() => songCache.get(key) || search(sq).then(d => d.length ? d : search(loose))
-    .then(groupDocs).then(g => (songCache.set(key, g), g)), songCache.has(key) ? null : () => quickPage(sq));
+    .then(groupDocs).then(g => year ? g.filter(x => +x.date.slice(0, 4) === year) : g).then(g => (songCache.set(key, g), g)), songCache.has(key) ? null : () => quickPage(sq));
 }
 async function loadOnThisDay(){
   const now = new Date();
@@ -1301,6 +1315,7 @@ function leaveSong(){
 function visible(){
   let list = state.shows;
   if (state.mode === 'library') return list;
+  if (state.mode === 'song' && state.noMatch) list = list.filter(g => !state.noMatch[g.date]);
   const f = state.filter.trim().toLowerCase();
   if (f) list = list.filter(g => `${g.date} ${g.venue} ${g.coverage} ${fmtLong(g.date)}`.toLowerCase().includes(f));
   const bayes = g => (g.rating * g.reviews + 3.6 * 4) / (g.reviews + 4);
@@ -1334,7 +1349,7 @@ function renderList(){
   $('#count').textContent = state.partial ? 'loading the rest…' : list.length ? `${list.length} show${list.length === 1 ? '' : 's'}` : '';
   $('#miniCtx').textContent = list.length ? `${state.label} · ${list.length} show${list.length === 1 ? '' : 's'}` : state.label;
   if (!list.length){
-    ul.innerHTML = `<li class="empty-list">${state.shows.length ? 'No shows match that filter. Clear it to see the whole list.' : state.mode === 'song' ? 'No set lists mention that song. Check the spelling, or pick a title from the suggestions.' : state.mode === 'search' ? 'Nothing matched. Try a song, venue, city, year, or a date like 5/8/77.' : 'No recordings found here. Try another year.'}</li>`;
+    ul.innerHTML = `<li class="empty-list">${state.shows.length ? 'No shows match that filter. Clear it to see the whole list.' : state.mode === 'song' ? 'No set lists mention that song. Check the spelling, or pick a title from the suggestions.' : state.mode === 'search' ? 'Nothing matched. Try a song, venue, city, state, year, or a date like 5/8/77.' : 'No recordings found here. Try another year.'}</li>`;
     return;
   }
   const showYear = state.mode !== 'year';
@@ -1399,7 +1414,7 @@ function renderStats(){
 let verQueue = [], verBusy = 0, verRender = 0;
 function queueVersionLengths(list){
   const song = state.song;
-  verQueue = list.slice(0, 60).filter(g => !(g.date in state.verLen)).map(g => ({ g, song }));
+  verQueue = list.slice(0, 120).filter(g => !(g.date in state.verLen)).map(g => ({ g, song }));
   for (let i = verBusy; i < 3; i++) pumpVersions();
 }
 function pumpVersions(){
@@ -1408,6 +1423,7 @@ function pumpVersions(){
   fetchMeta(job.g.sources[0].identifier).then(m => {
     if (state.song !== job.song) return;
     const i = matchIndex(m); state.verLen[job.g.date] = i >= 0 ? m.tracks[i].len : 0;
+    if (i < 0 && m.tracks.length){ state.noMatch = state.noMatch || {}; state.noMatch[job.g.date] = true; }   // not actually in this set list
     clearTimeout(verRender); verRender = setTimeout(() => { if (state.mode === 'song') { const y = window.scrollY; renderList(); window.scrollTo(0, y); } }, 600);
   }).catch(() => {}).finally(() => { verBusy--; pumpVersions(); });
 }
@@ -1638,8 +1654,8 @@ function prepTracks(m){
   if (new Set(m.tracks.map(t => t.set)).size < 2) m.tracks.forEach(t => t.set = null);
 }
 function matchIndex(m){
-  const q = norm(state.song); if (!q) return -1;
-  return m.tracks.findIndex(t => norm(t.title).includes(q));
+  const q = songKey(state.song); if (!q) return -1;
+  return m.tracks.findIndex(t => songKey(t.title).includes(q) || norm(t.title).includes(norm(state.song)));
 }
 function tabBody(m, playingThis){
   if (state.tab === 'setlist'){
@@ -2333,10 +2349,24 @@ function parseShowDate(q){
   return null;
 }
 function ymd(y, mo, d){ if (y < FIRST || y > LAST || mo < 1 || mo > 12 || d < 1 || d > 31) return null; return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`; }
+// Search understands: a year, a date, a song, a venue or city or state, or a mix like "Chicago 1977"
+const STATES = { alabama:'AL', alaska:'AK', arizona:'AZ', arkansas:'AR', california:'CA', colorado:'CO', connecticut:'CT', delaware:'DE', florida:'FL', georgia:'GA',
+  hawaii:'HI', idaho:'ID', illinois:'IL', indiana:'IN', iowa:'IA', kansas:'KS', kentucky:'KY', louisiana:'LA', maine:'ME', maryland:'MD', massachusetts:'MA',
+  michigan:'MI', minnesota:'MN', mississippi:'MS', missouri:'MO', montana:'MT', nebraska:'NE', nevada:'NV', 'new hampshire':'NH', 'new jersey':'NJ', 'new mexico':'NM',
+  'new york state':'NY', 'north carolina':'NC', 'north dakota':'ND', ohio:'OH', oklahoma:'OK', oregon:'OR', pennsylvania:'PA', 'rhode island':'RI', 'south carolina':'SC',
+  'south dakota':'SD', tennessee:'TN', texas:'TX', utah:'UT', vermont:'VT', virginia:'VA', washington:'WA', 'west virginia':'WV', wisconsin:'WI', wyoming:'WY', 'washington dc':'DC' };
+const ABBRS = new Set(Object.values(STATES));
+const songKey = x => norm(x).replace(/^saint /, 'st ');
+function findSong(q){
+  const k = songKey(q); if (!k) return null;
+  return SONGS.find(t => songKey(t) === k) || (k.length > 3 && SONGS.find(t => songKey(t).startsWith(k))) || null;
+}
 async function runSearch(raw){
-  const q = raw.trim(); if (!q) return;
+  let q = raw.trim(); if (!q) return;
   document.body.classList.remove('searching'); $('#songq').blur(); applyShrink();
+  // a bare year
   let y = q.match(/^'?(\d{2}|\d{4})$/); if (y){ let n = +y[1]; if (n < 100) n += 1900; if (n >= FIRST && n <= LAST) return loadYear(n); }
+  // a full date opens that show
   const d = parseShowDate(q);
   if (d){
     await loadYear(+d.slice(0, 4));
@@ -2344,16 +2374,43 @@ async function runSearch(raw){
     if (g) openShow(g); else toast('No recording of a show on that date.');
     return;
   }
-  const nq = norm(q), song = SONGS.find(t => norm(t) === nq) || (nq.length > 3 && SONGS.find(t => norm(t).startsWith(nq)));
-  if (song){ $('#songq').value = song; return searchSong(song); }
-  return searchAny(q);
+  // a year mixed with other words narrows the rest, e.g. "Chicago 1977" or "Dark Star 72"
+  let year = null;
+  const parts = q.split(/\s+/).filter(w => {
+    const m = w.match(/^'?(\d{2}|\d{4})$/); if (!m || year) return true;
+    let n = +m[1]; if (n < 100) n += 1900;
+    if (n >= FIRST && n <= LAST){ year = n; return false; }
+    return true;
+  });
+  q = parts.join(' ').trim(); if (!q && year) return loadYear(year);
+  const song = findSong(q);
+  if (song){ $('#songq').value = year ? `${song} ${year}` : song; return searchSong(song, year); }
+  return searchPlace(q, year, raw.trim());
 }
-async function searchAny(q){
+// Venues, cities, and states: ask the archive only about the venue and location fields, then double-check every result
+async function searchPlace(q, year, shown){
   if ($('#sotdMobile')) $('#sotdMobile').innerHTML = '';
-  leaveSong(); state.mode = 'search'; state.label = `“${q}”`; markDial();
+  leaveSong(); state.mode = 'search'; state.label = `“${shown}”`; markDial();
   if (document.body.classList.contains('viewing') && mq.matches) closeDetail();
-  const ph = q.replace(/["\\]/g, '');
-  await loadList(() => search(`collection:GratefulDead AND ("${ph}" OR venue:"${ph}" OR coverage:"${ph}")`).then(groupDocs));
+  const ph = q.replace(/["\\]/g, ''), k = norm(ph);
+  const abbr = STATES[k] || STATES[k.replace(/ state$/, '')] || (ph.length === 2 && ABBRS.has(ph.toUpperCase()) ? ph.toUpperCase() : null);
+  const fields = abbr ? `coverage:"${abbr}"` : `venue:"${ph}" OR coverage:"${ph}"`;
+  const yq = year ? ` AND year:${year}` : '';
+  const words = k.split(' ').filter(Boolean);
+  const matches = g => {
+    const places = [g.venue, g.coverage, ...g.sources.flatMap(s => [s.venue, s.coverage])].filter(Boolean);
+    if (year && +g.date.slice(0, 4) !== year) return false;
+    if (abbr) return places.some(p => new RegExp(`(,|\\s)${abbr}\\b`).test(String(p)));
+    return places.some(p => { const h = norm(p); return words.every(w => new RegExp(`\\b${w}`).test(h)); });
+  };
+  let found = [];
+  await loadList(async () => {
+    const docs = await search(`collection:GratefulDead AND (${fields})${yq}`);
+    found = groupDocs(docs).filter(matches);
+    return found;
+  });
+  // nothing at a place by that name: treat it as a song title the suggestions don't know
+  if (!found.length && !state.error){ $('#songq').value = shown; return searchSong(q, year); }
 }
 function submitSong(){
   const q = $('#songq').value.trim();
@@ -3468,14 +3525,12 @@ if (IOS && !navigator.standalone && !matchMedia('(display-mode: standalone)').ma
 
 const topEl = $('.top');
 function applyShrink(){
-  if (!mq.matches){ topEl.style.removeProperty('--shrink'); topEl.classList.remove('shrunk'); return; }
-  const p = Math.min(1, Math.max(0, window.scrollY / 90));
+  const p = Math.min(1, Math.max(0, window.scrollY / (mq.matches ? 90 : 140)));
   topEl.style.setProperty('--shrink', p.toFixed(3));
   topEl.classList.toggle('shrunk', p > .6 || document.body.classList.contains('viewing'));
 }
 function measureHeader(){
   const r = document.documentElement.style;
-  if (!mq.matches){ r.removeProperty('--hdrFull'); r.removeProperty('--hdrMin'); return; }
   topEl.style.setProperty('--shrink', '0'); r.setProperty('--hdrFull', topEl.offsetHeight + 'px');
   topEl.style.setProperty('--shrink', '1'); r.setProperty('--hdrMin', topEl.offsetHeight + 'px');
   applyShrink();
