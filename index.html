@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="deadjams">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f1f8ff'/><stop offset='.45' stop-color='%237a9dff'/><stop offset='1' stop-color='%23bba5ff'/></linearGradient><mask id='m'><circle cx='32' cy='32' r='30' fill='white'/><circle cx='32' cy='16' r='8.5' fill='black'/><circle cx='45.9' cy='40' r='8.5' fill='black'/><circle cx='18.1' cy='40' r='8.5' fill='black'/><circle cx='32' cy='32' r='4' fill='black'/></mask></defs><rect width='64' height='64' fill='url(%23g)' mask='url(%23m)'/></svg>">
+<link rel="preconnect" href="https://archive.org" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@800;900&family=Schibsted+Grotesk:wght@400..900&display=swap" rel="stylesheet">
@@ -695,6 +696,42 @@ function groupDocs(docs){
   });
 }
 
+// Saved on this device so revisits are instant (oldest entries are dropped when space runs out)
+const LS = {
+  get(k, maxAge){ try { const v = JSON.parse(localStorage.getItem('dj:' + k)); return v && Date.now() - v.t < maxAge ? v.d : null; } catch { return null; } },
+  set(k, d){
+    const put = () => localStorage.setItem('dj:' + k, JSON.stringify({ t: Date.now(), d }));
+    try { put(); } catch { try { pruneLS(); put(); } catch {} }
+  }
+};
+function pruneLS(){
+  const items = [];
+  for (let i = 0; i < localStorage.length; i++){
+    const k = localStorage.key(i);
+    if (k && k.startsWith('dj:')){ let t = 0; try { t = JSON.parse(localStorage.getItem(k)).t; } catch {} items.push([k, t]); }
+  }
+  items.sort((a, b) => a[1] - b[1]).slice(0, Math.ceil(items.length / 2)).forEach(([k]) => localStorage.removeItem(k));
+}
+const metaPending = new Map();
+function fetchMeta(id){
+  if (metaCache.has(id)) return Promise.resolve(metaCache.get(id));
+  if (metaPending.has(id)) return metaPending.get(id);
+  const saved = LS.get('m:' + id, 7 * 864e5);
+  if (saved){ metaCache.set(id, saved); return Promise.resolve(saved); }
+  const pr = getJSON(`${API}/metadata/${encodeURIComponent(id)}`)
+    .then(d => { const m = parseMeta(id, d); metaCache.set(id, m); LS.set('m:' + id, m); return m; })
+    .finally(() => metaPending.delete(id));
+  metaPending.set(id, pr);
+  return pr;
+}
+const warmHosts = new Set();
+function preconnect(host){
+  if (!host || warmHosts.has(host)) return; warmHosts.add(host);
+  const l = document.createElement('link'); l.rel = 'preconnect'; l.href = 'https://' + host; l.crossOrigin = 'anonymous'; document.head.appendChild(l);
+}
+function prefetchTop(){
+  visible().slice(0, 4).forEach((g, i) => setTimeout(() => fetchMeta(g.sources[0].identifier).then(m => preconnect(m.server)).catch(() => {}), 300 + i * 500));
+}
 function parseMeta(id, data){
   if (!data || !data.files) throw new Error('No files');
   const files = data.files;
@@ -708,19 +745,23 @@ function parseMeta(id, data){
     if (ta != null && tb != null && ta !== tb) return ta - tb;
     return a.name.localeCompare(b.name, undefined, { numeric: true });
   });
+  const host = data.server || data.d1 || '', dir = data.dir || '';
   tracks = tracks.map(f => {
     const orig = f.original ? byName.get(f.original) : null;
     const clean = f.name.replace(/\.[^.]+$/, '').replace(/^.*\//, '').replace(/[_]+/g, ' ');
     return {
       title: f.title || orig?.title || clean,
       len: parseLen(f.length || orig?.length),
-      url: `${API}/download/${encodeURIComponent(id)}/${f.name.split('/').map(encodeURIComponent).join('/')}`
+      url: host && dir ? `https://${host}${dir.split('/').map(encodeURIComponent).join('/')}/${f.name.split('/').map(encodeURIComponent).join('/')}`
+        : `${API}/download/${encodeURIComponent(id)}/${f.name.split('/').map(encodeURIComponent).join('/')}`,
+      alt: `${API}/download/${encodeURIComponent(id)}/${f.name.split('/').map(encodeURIComponent).join('/')}`
     };
   });
-  const md = data.metadata || {};
+  const full = data.metadata || {};
+  const md = {}; ['date', 'source', 'lineage', 'taper', 'transferer', 'addeddate', 'notes'].forEach(k => { if (full[k]) md[k] = full[k]; });
   return {
-    id, tracks, md,
-    notes: htmlToText(md.description),
+    id, tracks, md, server: host,
+    notes: htmlToText(full.description),
     reviews: (data.reviews || []).slice().sort((a, b) => String(b.reviewdate || '').localeCompare(String(a.reviewdate || '')))
   };
 }
@@ -761,7 +802,20 @@ async function loadYear(y, keepDetail){
   state.label = String(y);
   markDial();
   const q = `collection:GratefulDead AND year:${y}`;
-  await loadList(() => yearCache.get(y) || search(q).then(groupDocs).then(g => (yearCache.set(y, g), g)), yearCache.has(y) ? null : () => quickPage(q));
+  if (yearCache.has(y)) return loadList(() => yearCache.get(y));
+  const fetchFull = () => search(q).then(docs => { LS.set('y:' + y, docs); const g = groupDocs(docs); yearCache.set(y, g); return g; });
+  const saved = LS.get('y:' + y, 3 * 864e5);
+  if (saved){
+    const g = groupDocs(saved); yearCache.set(y, g);
+    await loadList(() => g);
+    fetchFull().then(g2 => {
+      if (state.mode !== 'year' || state.year !== y) return;
+      if (state.current){ const same = g2.find(x => x.date === state.current.date); if (same) state.current = same; }
+      state.shows = g2; renderList();
+    }).catch(() => {});
+    return;
+  }
+  await loadList(fetchFull, () => quickPage(q));
 }
 async function searchSong(q){
   state.mode = 'song'; state.song = q; state.label = q;
@@ -807,6 +861,7 @@ async function loadList(getter, preview){
   } catch (e) { if (token !== state.listToken) return; if (!state.partial){ state.error = e; state.shows = []; } }
   state.loading = false; state.partial = false;
   renderList();
+  if (!state.error) prefetchTop();
 }
 function leaveSong(){
   state.song = null; $('#songq').value = '';
@@ -856,6 +911,9 @@ function renderList(){
       </span>
     </button></li>`).join('');
 }
+const warmShow = e => { const b = e.target.closest && e.target.closest('.show'); if (!b) return; const g = state.shows.find(x => x.date === b.dataset.date); if (g) fetchMeta(g.sources[0].identifier).then(m => preconnect(m.server)).catch(() => {}); };
+$('#list').addEventListener('pointerover', warmShow);
+$('#list').addEventListener('touchstart', warmShow, { passive: true });
 $('#list').addEventListener('click', e => {
   const b = e.target.closest('.show'); if (!b) return;
   const g = state.shows.find(x => x.date === b.dataset.date);
@@ -877,9 +935,11 @@ async function loadSource(id){
   renderDetail();
   try {
     let m = metaCache.get(id);
-    if (!m){ m = parseMeta(id, await getJSON(`${API}/metadata/${encodeURIComponent(id)}`)); metaCache.set(id, m); }
+    if (!m) m = await fetchMeta(id);
     if (state.sourceId !== id) return;
     state.meta = m;
+    preconnect(m.server);
+    primeFirst(m);
     history.replaceState(null, '', '#' + id);
   } catch (e) {
     if (state.sourceId !== id) return;
@@ -1031,7 +1091,12 @@ function createAudio(cors){
 }
 audio = createAudio(true);
 
-const wantRouted = () => corsMode && eqAvailable && !state.car;
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const eqActive = () => eq.on && eq.gains.some(g => Math.abs(g) > .01);
+// iOS pauses processed audio when the screen locks, so on iPhone the music only goes through the EQ while it's in use
+const wantRouted = () => corsMode && eqAvailable && !state.car && (!IOS || eqActive() || tripIsOpen());
+let pendingSwap = false;
+function tripIsOpen(){ try { return trip.open; } catch { return false; } }
 function ensureCtx(){
   if (graph) return true;
   try {
@@ -1053,7 +1118,7 @@ function routeElement(el){
 // Swap the playing element (to add or drop the EQ path) without losing your place.
 function swapAudio(routed){
   const url = audio.getAttribute('src') ? audio.src : '', t = audio.currentTime, playing = !audio.paused;
-  const old = audio; audio = createAudio(routed);
+  const old = audio; audio = createAudio(routed || (IOS && corsMode));
   if (routed) routeElement(audio);
   old.pause(); old.removeAttribute('src'); old.load();
   if (url){
@@ -1063,11 +1128,17 @@ function swapAudio(routed){
   }
 }
 function ensureGraph(){
-  if (!wantRouted()){ if (audio.routed) swapAudio(false); if (ctx && ctx.state === 'suspended') ctx.resume(); return; }
+  const canSwap = !IOS || !navigator.userActivation || navigator.userActivation.isActive;
+  if (!wantRouted()){
+    if (audio.routed){ if (canSwap) swapAudio(false); else pendingSwap = true; }
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+    return;
+  }
   if (!ensureCtx()) return;
   if (ctx.state === 'suspended') ctx.resume();
-  if (!audio.routed){ if (audio.crossOrigin === 'anonymous') routeElement(audio); else swapAudio(true); }
+  if (!audio.routed){ if (audio.crossOrigin === 'anonymous') routeElement(audio); else if (canSwap) swapAudio(true); }
 }
+document.addEventListener('click', () => { if (pendingSwap){ pendingSwap = false; ensureGraph(); } }, true);
 function applyEq(){
   if (!graph) return;
   const g = eq.on ? eq.gains : eq.gains.map(() => 0);
@@ -1078,6 +1149,8 @@ function applyEq(){
 }
 async function onAudioError(e){
   if (e.target !== audio || !state.queue || !audio.getAttribute('src')) return;
+  const tr = state.queue.tracks[state.queue.index];
+  if (tr && tr.alt && tr.url !== tr.alt){ tr.url = tr.alt; audio.src = tr.alt; audio.play().catch(() => {}); return; }
   const url = audio.src;
   if (corsMode){
     // Check whether this is a cross-origin block (then retry without the EQ) or a genuinely missing file.
@@ -1107,7 +1180,7 @@ function playFrom(i, songRun = false){
 // The next track loads quietly in a spare player, then takes over the moment the current one ends.
 let spare = null;
 function bufferNext(){
-  const q = state.queue; if (!q) return;
+  const q = state.queue; if (!q || IOS) return;
   const n = q.songRun ? null : q.tracks[q.index + 1];
   if (!n){ if (spare){ spare.el.removeAttribute('src'); spare = null; } return; }
   if (spare && spare.url === n.url) return;
@@ -1115,18 +1188,26 @@ function bufferNext(){
   el.preload = 'auto'; el.muted = false; el.src = n.url; el.load();
   spare = { url: n.url, el };
 }
+// When a show opens and nothing is playing, start loading its first track so Play is instant
+function primeFirst(m){
+  if (state.queue || !m.tracks.length) return;
+  const i = state.song ? Math.max(0, matchIndex(m)) : 0;
+  audio.preload = 'auto';
+  if (audio.src !== m.tracks[i].url){ audio.src = m.tracks[i].url; audio.load(); }
+}
 function loadTrack(i){
   const q = state.queue; if (!q || i < 0 || i >= q.tracks.length) return;
   q.index = i;
   ensureGraph();
   const url = q.tracks[i].url;
-  if (spare && spare.url === url && (spare.el.crossOrigin === 'anonymous') === wantRouted()){
+  if (!IOS && spare && spare.url === url && (spare.el.crossOrigin === 'anonymous') === wantRouted()){
     const old = audio; audio = spare.el; spare = null;
     audio.volume = volume;
     if (wantRouted()) routeElement(audio);
     old.pause(); old.removeAttribute('src'); old.load();
     audio.currentTime = 0;
-  } else audio.src = url;
+  } else if (audio.src !== url) audio.src = url;
+  else { try { audio.currentTime = 0; } catch {} }
   audio.play().catch(() => {});
   q.buffered = false;
   ['#play', '#mplay', '#seek', '#shPlay', '#shSeek'].forEach(s => $(s).disabled = false);
@@ -1157,7 +1238,7 @@ async function continueToNextShow(songRun){
   try {
     const id = g.sources[0].identifier;
     let m = metaCache.get(id);
-    if (!m){ m = parseMeta(id, await getJSON(`${API}/metadata/${encodeURIComponent(id)}`)); metaCache.set(id, m); }
+    if (!m) m = await fetchMeta(id);
     if (!m.tracks.length) throw new Error('no audio');
     let start = 0;
     if (songRun){ start = matchIndex(m); if (start < 0){ state.queue = { ...q, show: g }; return continueToNextShow(true); } }
@@ -1299,7 +1380,7 @@ function buildEq(){
   $('#eqClose').onclick = () => toggleEq(false);
   renderEqNote();
 }
-function saveEq(){ store.set('eq', eq); applyEq(); $('#eqBtn').classList.toggle('on', eq.on && eq.gains.some(g => g !== 0)); }
+function saveEq(){ store.set('eq', eq); applyEq(); if (state.queue) ensureGraph(); $('#eqBtn').classList.toggle('on', eq.on && eq.gains.some(g => g !== 0)); }
 function toggleEq(force){
   const panel = $('#eq'); const show = force ?? panel.hidden;
   panel.hidden = !show; $('#eqBtn').setAttribute('aria-expanded', show);
@@ -1308,7 +1389,7 @@ function toggleEq(force){
 function renderEqNote(){
   if (typeof syncTrip === 'function') syncTrip();
   $('#eqNote').textContent = eqAvailable
-    ? 'Drag a band to shape the sound. Settings are saved on this device.'
+    ? (IOS ? 'On iPhone, music with the equalizer on pauses when the screen locks. Flat keeps it playing.' : 'Drag a band to shape the sound. Settings are saved on this device.')
     : "This browser won't let the page process archive.org audio, so the equalizer is off. Playback still works.";
   document.querySelectorAll('.band input, #eqOn, .chip').forEach(i => i.disabled = !eqAvailable);
 }
@@ -1391,6 +1472,7 @@ function hideSheet(){
 }
 function closeSheet(){ if (nav.sheet) history.back(); else hideSheet(); }
 window.addEventListener('popstate', () => {
+  if (nav.skipPop){ nav.skipPop = false; return; }
   if (nav.trip){ nav.trip = false; closeTrip(); return; }
   if (nav.car){ nav.car = false; hideCar(); return; }
   if (nav.sheet){ hideSheet(); return; }
@@ -1698,10 +1780,11 @@ async function openTrip(){
 function closeTrip(){
   if (!trip.open) return;
   trip.open = false; cancelAnimationFrame(trip.raf);
+  if (state.queue) ensureGraph();
   $('#trip').hidden = true; document.body.classList.remove('trip-open');
   trip.wake?.release?.(); trip.wake = null;
 }
-function requestCloseTrip(){ if (nav.trip) history.back(); else closeTrip(); }
+function requestCloseTrip(){ closeTrip(); if (nav.trip){ nav.trip = false; nav.skipPop = true; history.back(); } }
 let diceX = 0, diceY = 0;
 function rollDice(){
   const spinX = 360 * (2 + Math.floor(Math.random() * 2)), spinY = 360 * (2 + Math.floor(Math.random() * 2));
@@ -1743,7 +1826,7 @@ async function surprise(){
   try {
     const id = g.sources[0].identifier;
     let m = metaCache.get(id);
-    if (!m){ m = parseMeta(id, await getJSON(`${API}/metadata/${encodeURIComponent(id)}`)); metaCache.set(id, m); }
+    if (!m) m = await fetchMeta(id);
     state.queue = { id, tracks: m.tracks, show: g, index: 0 };
     loadTrack(0);
   } catch (e) { $('#carTrack').textContent = "That show didn't load. Try again."; }
