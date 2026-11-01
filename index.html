@@ -167,6 +167,8 @@ body.playing .reel{animation-play-state:running}
 
 /* Year dial — the signature element */
 .dial{position:relative;padding:4px 0 6px;user-select:none}
+.dial-hint{position:absolute;left:50%;bottom:-6px;translate:-50% 0;margin:0;font-size:12.5px;font-weight:650;color:var(--accent);background:var(--surface-solid);border:1px solid var(--line);padding:4px 11px;border-radius:999px;pointer-events:none;transition:opacity .6s}
+.dial-hint.fade{opacity:0}
 .dial-track{display:flex;align-items:flex-end;gap:0;overflow-x:auto;scroll-behavior:smooth;padding:0 calc(50vw - 40px);scrollbar-width:none;height:118px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
 .dial-track::-webkit-scrollbar{display:none}
 .yr{flex:0 0 auto;width:80px;background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;padding:0 0 4px;color:var(--muted)}
@@ -174,7 +176,6 @@ body.playing .reel{animation-play-state:running}
 .yr .ticks{display:flex;gap:7px;align-items:flex-end;height:30px}
 .yr .ticks i{display:block;width:2px;height:10px;background:var(--line);border-radius:2px}
 .yr .ticks i:nth-child(3){height:18px;background:var(--muted)}
-.yr.decade .lbl{color:var(--ink)}
 .yr:hover .lbl{color:var(--ink)}
 .yr[aria-pressed="true"] .lbl{font-size:52px;font-weight:750;color:#eaf1ff;letter-spacing:-.04em;line-height:1;}
 .yr[aria-pressed="true"]{width:128px}
@@ -194,7 +195,7 @@ body.playing .reel{animation-play-state:running}
 .lfilter{flex-basis:100%}
 .lfilter input{width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-solid);font-size:14px}
 .list-sub{flex-basis:100%;margin:-6px 0 0;color:var(--muted);font-size:13px}
-.recs{margin:0 0 22px;border:1px solid var(--line);border-radius:16px;background:rgba(var(--t-hi),.03)}
+.recs{margin:22px 0 0;border:1px solid var(--line);border-radius:16px;background:rgba(var(--t-hi),.03)}
 .recs summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:12px 16px}
 .recs summary::-webkit-details-marker{display:none}
 .recs summary .k{color:var(--muted);font-size:14px}
@@ -311,7 +312,11 @@ input[type=range].bar::-webkit-slider-thumb{-webkit-appearance:none;width:14px;h
 input[type=range].bar::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink);border:0}
 .right{display:flex;justify-content:flex-end;align-items:center;gap:8px}
 .vol{width:110px;flex:0 0 auto}
-.loading .play svg{opacity:.4}
+.ic.play,.cbig.play{position:relative}
+body.loading .ic.play svg,body.loading .cbig.play svg{opacity:.35}
+body.loading .ic.play::after,body.loading .cbig.play::after{content:"";position:absolute;inset:4px;border-radius:50%;border:2.5px solid transparent;border-top-color:currentColor;border-right-color:currentColor;animation:spinring .8s linear infinite}
+body.loading .cbig.play::after{inset:18px}
+@keyframes spinring{to{transform:rotate(360deg)}}
 
 /* EQ panel */
 .eq{backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);background:rgba(var(--t-deep),.94)!important;position:fixed;right:24px;bottom:calc(var(--player-h) + 12px + env(safe-area-inset-bottom,0px));z-index:21;width:min(520px,calc(100vw - 24px));
@@ -364,7 +369,8 @@ input[type=range].bar::-moz-range-thumb{width:14px;height:14px;border-radius:50%
 [data-theme="light"] .tripbtn{color:#fff;background:linear-gradient(135deg,var(--c1),var(--c4));border-color:transparent}
 [data-theme="light"] .toast{background:#0c1633;color:#fff}
 @media (max-width:900px){
-  [data-theme="light"] .list-head,[data-theme="light"] .back{background:rgba(255,255,255,.95)}
+  [data-theme="light"] .list-head{background:rgba(255,255,255,.95)}
+  [data-theme="light"] .back{background:#fff}
   [data-theme="light"] body::before{background:var(--bg)}
 }
 /* Now playing screen (phones) */
@@ -398,8 +404,12 @@ body.trip-open{overflow:hidden}
 .trip{--cd:120,160,255;--cdl:200,220,255;position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
   padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 .trip[hidden]{display:none}
+.trip.closing .trip-scrim{animation:tfadeout .32s ease forwards}
+.trip.closing .trip-box{animation:tout .32s ease forwards}
+@keyframes tfadeout{to{opacity:0}}
+@keyframes tout{to{opacity:0;transform:scale(.96)}}
 .trip-scrim{position:absolute;inset:0;background:rgba(2,6,20,.74);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;animation:tfade .3s ease}
-.trip-box{position:relative;width:min(1200px,calc(100vw - 56px));height:min(780px,calc(100vh - 110px));height:min(780px,calc(100svh - 110px));border-radius:28px;overflow:hidden;background:#030612;
+.trip-box{position:relative;transform-origin:center;width:min(1200px,calc(100vw - 56px));height:min(780px,calc(100vh - 110px));height:min(780px,calc(100svh - 110px));border-radius:28px;overflow:hidden;background:#030612;
   border:1px solid rgba(var(--t-hi),.24);animation:tin .38s cubic-bezier(.2,.8,.2,1)}
 .trip-box canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity .35s ease}
 .trip-box canvas.fade{opacity:0}
@@ -412,7 +422,7 @@ body.trip-open{overflow:hidden}
   color:#eaf1ff;background:rgba(3,6,18,.5);border:1px solid rgba(var(--t-hi),.25);padding:8px 14px;border-radius:999px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);pointer-events:none}
 @media (max-width:900px){.trip-need{top:auto;bottom:112px;max-width:calc(100% - 32px)}}
 @keyframes tfade{from{opacity:0}}
-@keyframes tin{from{opacity:0;transform:scale(.96)}}
+@keyframes tin{from{opacity:0;transform:scale(.94)}}
 
 /* The dice, from Driftfield: a translucent cube that tumbles and lands face-on */
 #bDice{position:absolute;left:50%;bottom:18px;translate:-50% 0;width:84px;height:84px;border:0;background:transparent;padding:0;cursor:pointer;
@@ -422,7 +432,7 @@ body.trip-open{overflow:hidden}
 #bDice .view{display:block;transform-style:preserve-3d}
 #bDice .cube{display:block;width:46px;height:46px;position:relative;transform-style:preserve-3d;transform:none;transition:transform 1.15s cubic-bezier(.15,.7,.2,1)}
 #bDice .face{position:absolute;inset:0;border-radius:2px;border:1.5px solid rgb(var(--cd));
-  background:linear-gradient(140deg,rgba(var(--cd),.4),rgba(var(--cd),.16) 60%,rgba(var(--cd),.3));
+  background:linear-gradient(rgba(var(--cd),.16),rgba(var(--cd),.16)),rgba(3,6,18,.55);
   display:grid;place-items:center;-webkit-backface-visibility:hidden;backface-visibility:hidden;transition:border-color .6s,background .6s}
 #bDice .face svg{width:28px;height:28px;fill:none;stroke:rgba(var(--cdl),.95);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #bDice .f1{transform:translateZ(23px)} #bDice .f2{transform:rotateY(90deg) translateZ(23px)} #bDice .f3{transform:rotateY(180deg) translateZ(23px)}
@@ -570,14 +580,22 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   button{touch-action:manipulation}
   .top{padding:calc(12px + env(safe-area-inset-top,0px)) 12px 2px;gap:10px}
   .wordmark svg{height:44px}
-  .word{font-size:48px}
+  .word{font-size:40px}
+  .brand{padding-bottom:4px;min-width:0}
   .reel,.mark{width:40px;height:40px}
   .brand p{display:none}
   .tools{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .search{grid-column:1/-1}
   .tools{grid-template-columns:repeat(3,1fr)!important}
   .tools .btn{font-size:14px}
-  .sotd-m{display:block;padding:12px 12px 0}
+  .sotd-m{display:block;padding:10px 12px 0}
+  .sotd-m .sotd{display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 10px;padding:9px 12px;border-radius:14px;background:var(--surface2)}
+  .sotd-m .sotd .k{font-size:11px}
+  .sotd-m .sotd h3{font-size:15px;margin:1px 0 0;letter-spacing:-.01em}
+  .sotd-m .sotd p:not(.k){display:none}
+  .sotd-m .sotd .row{grid-column:2;grid-row:1/3}
+  .sotd-m .sotd .row [data-sotd="open"]{display:none}
+  .sotd-m .sotd .btn{padding:7px 14px;min-height:34px;font-size:14px}
   .sotd-m .sotd{margin:0}
   #timelineD{display:none}
   .tools .btn{justify-content:center;padding:9px 8px}
@@ -603,14 +621,24 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   .s-date b{font-size:16px;white-space:nowrap}
   .s-meta{grid-column:2;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px}
   .detail-pane{display:none;padding:0 16px 24px}
-  body.viewing .top,body.viewing .dial,body.viewing .list-pane{display:none}
+  body.viewing .dial,body.viewing .list-pane,body.viewing .tools{display:none}
+  body.viewing .top{position:sticky;top:0;z-index:8;padding:calc(6px + env(safe-area-inset-top,0px)) 16px 4px;background:var(--bg);margin:0}
+  body.viewing .word{font-size:26px}
+  body.viewing .layout{padding-top:0}
   body.viewing .detail-pane{display:block}
-  .back{display:flex;align-items:center;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;width:calc(100% + 32px);margin:0 -16px 14px;padding:14px 16px;
-    background:rgba(var(--t-deep),.95);border-bottom:1px solid var(--line);border-radius:22px 22px 0 0;font-size:16px;color:var(--ink)}
-  .d-date{font-size:46px}
-  .d-venue{font-size:19px}
-  .d-row{margin:16px 0 18px}
-  #playShow,#playMatch{width:100%;padding:13px;font-size:16px}
+  .back{display:flex;align-items:center;position:sticky;top:calc(env(safe-area-inset-top,0px) + 44px);z-index:5;width:calc(100% + 32px);margin:0 -16px 10px;padding:10px 16px;
+    background:var(--surface-solid);border-bottom:1px solid var(--line);border-radius:22px 22px 0 0;font-size:16px;color:var(--ink)}
+  .d-dow{font-size:13px;margin-bottom:2px}
+  .d-date{font-size:30px;letter-spacing:-.035em}
+  .d-venue{font-size:16px;margin:4px 0 0}
+  .d-city{font-size:14px}
+  .d-row{margin:12px 0 10px;gap:8px 12px}
+  .d-row .rating .muted{display:none}
+  .d-row .link{font-size:14px}
+  .heartbtn{padding:8px 13px;min-height:38px;font-size:14px}
+  .tabs{margin-bottom:6px}
+  .tab{padding:10px 6px}
+  #playShow,#playMatch{padding:9px 16px;min-height:40px;font-size:15px}
   .tab{white-space:nowrap;font-size:15px}
   .source select{font-size:16px}
   .tab{flex:1;padding:12px 6px}
@@ -666,7 +694,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   </div>
 </header>
 
-<nav class="dial" aria-label="Choose a year"><div class="dial-track" id="dial"></div></nav>
+<nav class="dial" aria-label="Choose a year"><div class="dial-track" id="dial"></div><p class="dial-hint" id="dialHint" hidden></p></nav>
 
 <main class="layout">
   <section class="pane list-pane" aria-label="Shows">
@@ -714,7 +742,6 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
       <button class="ic" id="next" aria-label="Next track" disabled><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
       <button class="ic sk" id="fwd15" aria-label="Forward 15 seconds" disabled><svg viewBox="0 0 24 24"><path d="M12 5V2l5 4-5 4V7a6 6 0 1 0 6 6h2a8 8 0 1 1-8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="6.4" font-weight="700" font-family="system-ui,sans-serif">15</text></svg></button>
     </div>
-    <div class="timeline" id="timelineD" aria-hidden="true"></div>
     <div class="seek">
       <span id="cur">0:00</span>
       <input type="range" class="bar" id="seek" min="0" max="1000" value="0" aria-label="Seek" disabled>
@@ -929,8 +956,8 @@ function groupDocs(docs){
     const rating = n ? srcs.reduce((a, s) => a + s.rating * s.reviews, 0) / n : 0;
     return {
       date, sources: srcs, rating, reviews: n,
-      venue: (srcs.find(s => s.venue) || {}).venue || 'Venue not listed',
-      coverage: (srcs.find(s => s.coverage) || {}).coverage || '',
+      venue: fixText((srcs.find(s => s.venue) || {}).venue) || 'Venue not listed',
+      coverage: fixText((srcs.find(s => s.coverage) || {}).coverage),
       hasSbd: srcs.some(s => s.kind === 'Soundboard'),
       downloads: srcs.reduce((a, s) => a + s.dl, 0)
     };
@@ -973,6 +1000,24 @@ function preconnect(host){
 function prefetchTop(){
   visible().slice(0, 4).forEach((g, i) => setTimeout(() => fetchMeta(g.sources[0].identifier).then(m => preconnect(m.server)).catch(() => {}), 300 + i * 500));
 }
+// Tidy text from the archive: decode HTML entities, repair garbled accents, drop taper footnote symbols and file-number prefixes
+const entityBox = document.createElement('textarea');
+function fixText(x){
+  let t = String(x || '');
+  if (/&[#a-z0-9]+;/i.test(t)){ entityBox.innerHTML = t; t = entityBox.value; }
+  if (/Ã.|â€/.test(t)){ try { t = decodeURIComponent(escape(t)); } catch {} }
+  return t.replace(/[\u0000-\u001f\u007f\ufffd]/g, '').replace(/\s+/g, ' ').trim();
+}
+const NOT_SONG = /^(tuning|tune ?ups?|crowd( noise)?|audience|intro(duction)?s?|band intro(duction)?s?|banter|stage (banter|announcements?|chatter)|announcements?|applause|dead air|sound ?check|silence|encore break|set ?break|chatter|noodling|feedback|false start|technical difficulties)$/i;
+function cleanTitle(raw){
+  let t = fixText(raw)
+    .replace(/^\s*(gd\d{2,4}-\d{2}-\d{2}\S*\s*)/i, '')                // file-name prefixes
+    .replace(/^\s*(d\d+\s*)?t?\d{1,3}\s*[.):\-–]\s+/i, '')             // "d1t01 - ", "01. "
+    .replace(/[*#%^@~†‡§¤]+/g, '')                                     // taper footnote marks
+    .replace(/\s*\[[^\]]*\]\s*$/,'')                                    // trailing [notes]
+    .trim();
+  return t || fixText(raw) || null;   // tuning, crowd, banter and the like stay in the set list
+}
 function parseMeta(id, data){
   if (!data || !data.files) throw new Error('No files');
   const files = data.files;
@@ -991,7 +1036,7 @@ function parseMeta(id, data){
     const orig = f.original ? byName.get(f.original) : null;
     const clean = f.name.replace(/\.[^.]+$/, '').replace(/^.*\//, '').replace(/[_]+/g, ' ');
     return {
-      title: f.title || orig?.title || clean,
+      title: cleanTitle(f.title || orig?.title || clean),
       len: parseLen(f.length || orig?.length),
       url: host && dir ? `https://${host}${dir.split('/').map(encodeURIComponent).join('/')}/${f.name.split('/').map(encodeURIComponent).join('/')}`
         : `${API}/download/${encodeURIComponent(id)}/${f.name.split('/').map(encodeURIComponent).join('/')}`,
@@ -999,6 +1044,7 @@ function parseMeta(id, data){
     };
   });
   const full = data.metadata || {};
+  tracks = tracks.filter(t => t.title);
   const md = {}; ['date', 'source', 'lineage', 'taper', 'transferer', 'addeddate', 'notes'].forEach(k => { if (full[k]) md[k] = full[k]; });
   return {
     id, tracks, md, server: host,
@@ -1015,7 +1061,25 @@ function buildDial(){
     html += `<button class="yr${y % 10 === 0 ? ' decade' : ''}" data-year="${y}" aria-pressed="false"><span class="lbl">${y}</span><span class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></button>`;
   }
   el.innerHTML = html;
-  el.addEventListener('click', e => { const b = e.target.closest('.yr'); if (b) loadYear(+b.dataset.year); });
+  el.addEventListener('click', e => { const b = e.target.closest('.yr'); if (b){ haptic(); loadYear(+b.dataset.year); } });
+  // A tick each time a new year passes the middle while you swipe, like a picker wheel.
+  // Only for your own scrolling, not when the dial re-centers itself or plays its demo.
+  let touching = false, userUntil = 0, lastYear = null, rafPending = false;
+  const mine = () => touching || performance.now() < userUntil;
+  el.addEventListener('pointerdown', () => { touching = true; }, { passive: true });
+  el.addEventListener('touchstart', () => { touching = true; }, { passive: true });
+  ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach(ev => el.addEventListener(ev, () => { touching = false; userUntil = performance.now() + 900; }, { passive: true }));
+  el.addEventListener('wheel', () => { userUntil = performance.now() + 400; }, { passive: true });
+  el.addEventListener('scroll', () => {
+    if (rafPending) return; rafPending = true;
+    requestAnimationFrame(() => {
+      rafPending = false;
+      const mid = el.getBoundingClientRect().left + el.clientWidth / 2;
+      let best = null, bd = 1e9;
+      el.querySelectorAll('.yr').forEach(b => { const r = b.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - mid); if (d < bd){ bd = d; best = b.dataset.year; } });
+      if (best !== lastYear){ if (lastYear !== null && mine()) haptic(); lastYear = best; }
+    });
+  }, { passive: true });
   el.addEventListener('keydown', e => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
@@ -1164,7 +1228,7 @@ function itemHTML(g, showYear){
         <span>${vl > 0 ? `<span class="vlen">${clock(vl)}</span> ` : ''}${g.hasSbd ? '<span class="badge">SBD</span> ' : ''}${g.sources.length} tape${g.sources.length === 1 ? '' : 's'}</span>
       </span>
     </button>`;
-  return state.mode === 'song' ? `<li class="withprev">${btn}<button class="pv" data-pv="${g.date}" aria-label="Preview this version">▶ 30s</button></li>` : `<li>${btn}</li>`;
+  return `<li>${btn}</li>`;
 }
 function renderLibrary(ul){
   const f = favs(), saved = Object.values(f.shows).sort((a, b) => b.at - a.at), hist = store.get('history', []);
@@ -1180,11 +1244,18 @@ const warmShow = e => { const b = e.target.closest && e.target.closest('.show');
 $('#list').addEventListener('pointerover', warmShow);
 $('#list').addEventListener('touchstart', warmShow, { passive: true });
 $('#list').addEventListener('click', e => {
-  const pv = e.target.closest('.pv'); if (pv){ previewVersion(pv.dataset.pv, pv); return; }
   const fs = e.target.closest('.fsong'); if (fs){ playSavedSong(favs().songs[+fs.dataset.fs]); return; }
   const b = e.target.closest('.show'); if (!b) return;
   const g = state.shows.find(x => x.date === b.dataset.date);
-  if (g) openShow(g);
+  if (!g) return;
+  openShow(g);
+  if (state.mode === 'song'){   // a song search plays that show's version of the song right away
+    fetchMeta(g.sources[0].identifier).then(m => {
+      if (state.current !== g) return;
+      const i = matchIndex(m); state.queue = { id: m.id, tracks: m.tracks, show: g, index: Math.max(0, i), songRun: i >= 0 };
+      loadTrack(state.queue.index);
+    }).catch(() => {});
+  }
 });
 
 // Song stats from the list itself: how many shows mention it, first and last, and a bar per year
@@ -1284,7 +1355,7 @@ function openShow(g, sourceId, auto = false){
   state.current = g; if ($('#sotdMobile')) $('#sotdMobile').innerHTML = ''; state.tab = 'setlist'; state.allReviews = false; state.recOpen = false;
   if (auto){ document.querySelectorAll('.show').forEach(b => b.setAttribute('aria-current', b.dataset.date === g.date)); loadSource(sourceId || g.sources[0].identifier); return; }
   if (mq.matches && !document.body.classList.contains('viewing')){ listScroll = window.scrollY; history.pushState({ tr: 'show' }, ''); nav.show = true; }
-  document.body.classList.add('viewing');
+  document.body.classList.add('viewing'); window.relayoutWord && window.relayoutWord();
   document.querySelectorAll('.show').forEach(b => b.setAttribute('aria-current', b.dataset.date === g.date));
   if (matchMedia('(max-width: 900px)').matches) window.scrollTo(0, 0);
   loadSource(sourceId && g.sources.some(s => s.identifier === sourceId) ? sourceId : g.sources[0].identifier);
@@ -1341,14 +1412,14 @@ function renderDetail(){
       <button class="btn heartbtn" id="favShow" aria-pressed="${isFavShow(g.date)}"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span>${isFavShow(g.date) ? 'Saved' : 'Save show'}</span></button>
       <a class="link" href="https://archive.org/details/${encodeURIComponent(state.sourceId)}" target="_blank" rel="noopener">Open on archive.org</a>
     </div>
-    <details class="recs" id="recs"${state.recOpen ? ' open' : ''}>
-      <summary><span class="k">Recording</span><b>${src.kind}${src.reviews ? `, ${src.rating.toFixed(1)}★` : ''}</b><span class="chg">${g.sources.length > 1 ? `Choose from ${g.sources.length}` : 'Details'}</span></summary>
-      <div class="rec-list" role="radiogroup" aria-label="Recordings of this show, highest rated first">${recs}</div>
-    </details>
     <div class="tabs" role="tablist">
       ${['setlist', 'notes', 'reviews'].map(t => `<button class="tab" role="tab" data-tab="${t}" aria-selected="${state.tab === t}">${{ setlist: 'Set list', notes: 'Notes', reviews: `Reviews${m ? ` (${m.reviews.length})` : ''}` }[t]}</button>`).join('')}
     </div>
-    <div role="tabpanel">${body}</div>`;
+    <div role="tabpanel">${body}</div>
+    <details class="recs" id="recs"${state.recOpen ? ' open' : ''}>
+      <summary><span class="k">Recording</span><b>${src.kind}${src.reviews ? `, ${src.rating.toFixed(1)}★` : ''}</b><span class="chg">${g.sources.length > 1 ? `Choose from ${g.sources.length}` : 'Details'}</span></summary>
+      <div class="rec-list" role="radiogroup" aria-label="Recordings of this show, highest rated first">${recs}</div>
+    </details>`;
 
   $('#back').onclick = closeDetail;
   $('#recs').addEventListener('toggle', e => { state.recOpen = e.target.open; });
@@ -1369,6 +1440,7 @@ function renderDetail(){
 // Read set breaks and segues: "->" at the end of a title, and Set 1 / Set 2 / Encore headings in the notes
 function prepTracks(m){
   if (m.prepped) return; m.prepped = true;
+  m.tracks = m.tracks.map(t => { const c = cleanTitle(t.title); return c ? { ...t, title: c } : null; }).filter(Boolean);
   m.tracks.forEach(t => {
     if (/\s*(-+>|>|\u2192)\s*$/.test(t.title)){ t.segue = true; t.title = t.title.replace(/\s*(-+>|>|\u2192)\s*$/, ''); }
     t.set = null;
@@ -1409,9 +1481,9 @@ function tabBody(m, playingThis){
       const head = t.set && (i === 0 || m.tracks[i - 1].set !== t.set) ? `<li class="set-h">${t.set}</li>` : '';
       const suite = i > 0 && m.tracks[i - 1].segue;
       return `${head}<li><button class="trk${on ? ' playing' + paused : ''}${i === mi ? ' match' : ''}${suite ? ' suite' : ''}" data-i="${i}" aria-label="Play ${esc(t.title)}">
-        <span class="n">${on ? '<span class="eqbars" aria-hidden="true"><i></i><i></i><i></i></span>' : i + 1}</span>
+        <span class="n">${on && state.started && !audio.paused ? '<span class="eqbars" aria-hidden="true"><i></i><i></i><i></i></span>' : i + 1}</span>
         <span class="t">${esc(t.title)}${t.segue ? '<span class="seg-arrow" aria-label="segues into the next song">→</span>' : ''}${i === mi ? '<span class="yours">Your song</span>' : ''}</span><span class="len">${t.len ? clock(t.len) : ''}</span></button><button class="heart" data-fi="${i}" aria-pressed="${isFavSong(m.id, i)}" aria-label="Save this version of ${esc(t.title)}"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></button></li>`;
-    }).join('')}</ol>${total ? `<p class="total">${m.tracks.length} tracks, ${clock(total)} total</p>` : ''}<label class="chk auto"><input type="checkbox" id="autoNext"${store.get('autonext', true) ? ' checked' : ''}> ${state.song ? 'After a version ends, play the next show\'s version' : 'When a show ends, start the next one in the list'}</label>`;
+    }).join('')}</ol>${total ? `<p class="total">${m.tracks.length} tracks, ${clock(total)} total</p>` : ''}`;
   }
   if (state.tab === 'notes'){
     const md = m.md;
@@ -1450,13 +1522,13 @@ function tabBody(m, playingThis){
 
 // The whole show as a strip of segments, one per song, with a gap at each set break. Tap a segment to jump there.
 function renderTimeline(){
-  const q = state.queue; const els = [$('#timeline'), $('#timelineD')];
+  const q = state.queue; const els = [$('#timeline')];
   if (!q){ els.forEach(e => e && (e.innerHTML = '')); return; }
   const m = metaCache.get(q.id); if (m) prepTracks(m);
   const html = q.tracks.map((t, i) => `<i data-ti="${i}" class="${i < q.index ? 'done' : i === q.index ? 'cur' : ''}${i > 0 && t.set && q.tracks[i - 1].set !== t.set ? ' gap' : ''}" style="flex:${Math.max(30, t.len || 300)}" title="${esc(t.title)}">${i === q.index ? '<b></b>' : ''}</i>`).join('');
   els.forEach(e => { if (e) e.innerHTML = html; });
 }
-['#timeline', '#timelineD'].forEach(sel => $(sel).addEventListener('click', e => { const i = e.target.closest('[data-ti]'); if (i){ loadTrack(+i.dataset.ti); haptic(); } }));
+['#timeline'].forEach(sel => $(sel).addEventListener('click', e => { const i = e.target.closest('[data-ti]'); if (i){ loadTrack(+i.dataset.ti); haptic(); } }));
 // Desktop: hand off to the preloaded next song a hair before this one ends, for gapless segues
 function gaplessWatch(){
   requestAnimationFrame(gaplessWatch);
@@ -1545,8 +1617,9 @@ function createAudio(cors){
   a.addEventListener('durationchange', onTime);
   a.addEventListener('play', syncPlay);
   a.addEventListener('pause', syncPlay);
-  a.addEventListener('waiting', () => $('#player').classList.add('loading'));
-  a.addEventListener('playing', () => { $('#player').classList.remove('loading'); errCount = 0; syncPlay(); });
+  a.addEventListener('waiting', () => { if (a === audio) setLoading(true); });
+  a.addEventListener('playing', () => { if (a !== audio) return; setLoading(false); errCount = 0; state.started = true; markPlayingRow(); syncPlay(); });
+  a.addEventListener('pause', () => { if (a === audio) setLoading(false); });
   a.addEventListener('ended', () => { if (a === audio) onEnded(); });
   a.addEventListener('error', onAudioError);
   if (window.WebKitPlaybackTargetAvailabilityEvent){
@@ -1666,6 +1739,7 @@ async function onAudioError(e){
   }
   errCount++;
   const q = state.queue;
+  setLoading(false);
   if (errCount < 3 && q.index < q.tracks.length - 1){ toast("That track didn't load. Skipping ahead."); loadTrack(q.index + 1); }
   else { toast("Playback stopped: archive.org didn't return this track. Try another recording of the show."); syncPlay(); }
 }
@@ -1693,6 +1767,12 @@ function primeFirst(m){
   audio.preload = 'auto';
   if (audio.src !== m.tracks[i].url){ audio.src = m.tracks[i].url; audio.load(); }
 }
+let loadingT = 0;
+function setLoading(on){ clearTimeout(loadingT); if (on) loadingT = setTimeout(() => document.body.classList.add('loading'), 350); else document.body.classList.remove('loading'); }
+// the playing bars appear next to a song only once its music is actually coming out
+function markPlayingRow(){
+  document.querySelectorAll('.trk.playing .n').forEach(n => { if (!n.querySelector('.eqbars')) n.innerHTML = '<span class="eqbars" aria-hidden="true"><i></i><i></i><i></i></span>'; });
+}
 function loadTrack(i){
   const q = state.queue; if (!q || i < 0 || i >= q.tracks.length) return;
   q.index = i;
@@ -1707,7 +1787,7 @@ function loadTrack(i){
   } else if (audio.src !== url) audio.src = url;
   else { try { audio.currentTime = 0; } catch {} }
   audio.play().catch(() => {});
-  q.buffered = false;
+  q.buffered = false; state.started = false; setLoading(true);
   if (!q.preview){ if (q.histFor !== q.show.date){ q.histFor = q.show.date; addHistory(q); } }
   if (!q.preview) store.set('resume', { g: gmin(q.show), id: q.id, index: i, t: 0 });
   if (i > 0 && q.tracks[i - 1].segue && tripIsOpen()) segueShift();
@@ -1985,7 +2065,7 @@ const nav = { show: false, sheet: false, thenShow: false };
 let listScroll = 0;
 function hideDetail(){
   nav.show = false;
-  document.body.classList.remove('viewing');
+  document.body.classList.remove('viewing'); window.relayoutWord && window.relayoutWord();
   requestAnimationFrame(() => { window.scrollTo(0, listScroll); markDial(); });
 }
 function closeDetail(){ if (nav.show) history.back(); else hideDetail(); }
@@ -2375,7 +2455,9 @@ async function nextPhoto(){
     photoList = [def, ...pool.filter(x => !/Grateful_Dead_\(1970\)/.test(x.page || '') && x.title !== 'Grateful Dead (1970)')];
     photoI = -1;
   }
-  photoI = (photoI + 1) % photoList.length;
+  trip.photoCount = (trip.photoCount || 0) + 1;
+  photoI = trip.photoCount % 2 === 1 ? 0 : 1 + ((photoI + 1) % Math.max(1, photoList.length - 1));   // the 1970 photo every other time
+  if (photoI >= photoList.length) photoI = 0;
   const ph = photoList[photoI], im = new Image(); im.crossOrigin = 'anonymous';
   im.onload = () => {
     try {
@@ -2414,7 +2496,7 @@ function tripResize(){
 }
 function setPal(P){ P.v3('uP0', trip.cur.pal[0]); P.v3('uP1', trip.cur.pal[1]); P.v3('uP2', trip.cur.pal[2]); P.v3('uP3', trip.cur.pal[3]); }
 function tripLoop(now){
-  if (!trip.open) return;
+  if (!trip.open && !$('#trip').classList.contains('closing')) return;
   trip.raf = requestAnimationFrame(tripLoop);
   const dt = Math.min(.05, trip.last ? (now - trip.last) / 1000 : .016); trip.last = now;
   // a new roll eases in over a couple of seconds
@@ -2425,8 +2507,8 @@ function tripLoop(now){
   readLevels(dt);
   const L = trip.L, c = trip.cur, cv = $('#tripCv');
   const T = trip.P;
-  const drive = .1 + L.bass * 5 + L.beat * 4.5 + L.hit * 2.4;   // nearly still alone; the music sets the pace
-  trip.t += dt * c.speed * (.1 + L.bass * 3 + L.beat * 2.2);
+  const drive = (.1 + L.bass * 5 + L.beat * 4.5 + L.hit * 2.4) * .4;   // 60% slower; the music still sets the pace
+  trip.t += dt * c.speed * (.1 + L.bass * 3 + L.beat * 2.2) * .4;
   const step = Math.min(2.5, Math.max(.25, dt * 60)) * c.speed * drive;
   // simulate
   gl.bindFramebuffer(gl.FRAMEBUFFER, simB.fb); gl.viewport(0, 0, simB.w, simB.h);
@@ -2444,7 +2526,7 @@ function tripLoop(now){
   P.v4a('uSpawn[0]', spawnU); P.v3a('uSpawnCol[0]', spawnCol);
   updatePointer(dt);
   const tm = trip.T.touchMode || 0, gv = trip.P.gravity, dd = trip.P.dream;
-  const tk = [1, .6 + gv, .5 + dd, .5 + gv, .4 + .3 * trip.P.glow][tm] * .7;   // about 70% of Driftfield's strength
+  const tk = [1, .6 + gv, .5 + dd, .5 + gv, .4 + .3 * trip.P.glow][tm] * 1.05;   // about Driftfield's strength
   trip.touchK = tk;
   P.v4a('uPtr[0]', ptrU); P.f('uBrush', Math.max(18, 230 - 200 * (trip.P.brush || .3))); P.f('uTM', tm); P.f('uTouchK', tk);
   P.f('uStars', Math.min(1.5, L.high * 2)); P.f('uBeat', L.beat); P.f('uBeatR', Math.min(1.2, (now / 1000 - trip.beatClock) * .9));
@@ -2456,16 +2538,16 @@ function tripLoop(now){
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, simA.tex); P.i('uSim', 0);
   P.f('uAspect', cv.width / cv.height); P.f('uTime', trip.t); setPal(P);
   P.v2('uTexel', 1 / simA.w, 1 / simA.h);
-  P.f('uGlow', c.glow * (1 + L.high * .9)); P.f('uRipple', c.ripple * .6 + L.mid * 1.5); P.f('uSat', c.sat); P.f('uExpo', 1.15 + L.bass * .45);
+  P.f('uGlow', c.glow * .8 * (1 + L.high * .9)); P.f('uRipple', c.ripple * .6 + L.mid * 1.5); P.f('uSat', c.sat); P.f('uExpo', .85 + L.bass * .4);
   P.f('uKick', L.beat); P.v3('uBack', c.back); P.f('uHue', trip.hue || 0);
   P.v4a('uTouch[0]', touchU); P.f('uTouchAmp', (trip.T.touchMode === 2 ? 1.6 * (trip.touchK || 1) : .5) * .7);
   // photo envelope: every 40 to 80 seconds, fades in over 4s, lingers 8s, fades out over 4s
   let imgAmt = 0;
   if (trip.img && store.get('photos', true)){
-    if (!trip.imgNext) trip.imgNext = now / 1000 + rand(20, 40);
+    if (!trip.imgNext) trip.imgNext = now / 1000 + rand(5, 10);
     const e = now / 1000 - trip.imgNext;
-    if (e > 16){ trip.imgNext = now / 1000 + rand(40, 80); nextPhoto(); }   // a different photo next time
-    else if (e > 0) imgAmt = Math.min(1, e / 4, (16 - e) / 4) * .9;
+    if (e > 9){ trip.imgNext = now / 1000 + rand(14, 26); nextPhoto(); }   // a different photo next time
+    else if (e > 0) imgAmt = Math.min(1, e / 1.4, (9 - e) / 1.4) * .9;   // quick morph in and out
   }
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, trip.img ? trip.img.tex : simB.tex);
   P.i('uImg', 1); P.f('uImgAmt', imgAmt); P.f('uImgAsp', trip.img ? trip.img.asp : 1);
@@ -2492,7 +2574,7 @@ function applyTrip(target){
 async function openTrip(){
   if (trip.open) return;
   if (!gl && !glInit()){ toast('Trip out needs WebGL. Turn on hardware acceleration in your browser settings.'); return; }
-  const el = $('#trip'); el.hidden = false; trip.open = true;   // open first, so the music gets routed to the visuals
+  const el = $('#trip'); el.classList.remove('closing'); el.hidden = false; trip.open = true;   // open first, so the music gets routed to the visuals
   if (state.queue){
     ensureGraph();
     // iPhone (and Home Screen apps): start a fresh player wired to the visuals, picking up where the song is
@@ -2512,9 +2594,12 @@ async function openTrip(){
 }
 function closeTrip(){
   if (!trip.open) return;
-  trip.open = false; cancelAnimationFrame(trip.raf);
+  trip.open = false;
+  setTimeout(() => { if (!trip.open) cancelAnimationFrame(trip.raf); }, 320);   // keep drawing while it fades
   if (state.queue) ensureGraph();
-  $('#trip').hidden = true; document.body.classList.remove('trip-open');
+  const el = $('#trip'); el.classList.add('closing');
+  setTimeout(() => { if (!trip.open){ el.hidden = true; el.classList.remove('closing'); } }, 320);
+  document.body.classList.remove('trip-open');
   trip.wake?.release?.(); trip.wake = null;
 }
 function requestCloseTrip(){ closeTrip(); if (nav.trip){ nav.trip = false; nav.skipPop = true; history.back(); } }
@@ -2698,7 +2783,7 @@ tripCv.addEventListener('pointermove', e => {
   const p = boxPoint(e), now = performance.now();
   if (!lastPtr){ lastPtr = p; return; }
   if (now - lastPushT < 16) return;
-  let vx = (p[0] - lastPtr[0]) * .6, vy = (p[1] - lastPtr[1]) * .6;   // gentler than Driftfield
+  let vx = (p[0] - lastPtr[0]) * .9, vy = (p[1] - lastPtr[1]) * .9;
   const l = Math.hypot(vx, vy); if (l > .04){ vx *= .04 / l; vy *= .04 / l; }
   if (l > .0005){
     const i = ptrI; ptrI = (ptrI + 1) % 8; ptrBase.set([p[0], p[1], vx, vy], i * 4); ptrAge[i] = 0;
@@ -2870,6 +2955,7 @@ const wordHost = $('#wordmark'), wordLayers = [];
   layout();
   if (document.fonts){ document.fonts.load('800 200px Fraunces', 'j').then(layout, layout); document.fonts.ready.then(layout); }
   addEventListener('resize', layout);
+  window.relayoutWord = () => requestAnimationFrame(layout);
 })();
 // With music playing, each kick lands a full stomp; between songs it falls back to the subtle loop.
 const STOMP_OFF = [0, .12, .42, .56, .70, .78, .88, 1];   // the slap lands at 70%
@@ -2929,13 +3015,29 @@ function goHome(){
   if (!$('#car').hidden) hideCar();
   nav.trip = nav.settings = nav.sheet = nav.car = nav.show = false;
   state.current = null; state.sourceId = null; state.meta = null;
-  document.body.classList.remove('viewing');
+  document.body.classList.remove('viewing'); window.relayoutWord && window.relayoutWord();
   history.replaceState(null, '', location.pathname);
   if (state.mode !== 'year') loadYear(state.year); else { renderList(); markDial(); }
   renderDetail(); fillSotd();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 $('#homeLink').addEventListener('click', e => { e.preventDefault(); goHome(); haptic(); });
+
+function dialDemo(){
+  const n = store.get('dialHints', 0); if (n >= 3) return;
+  store.set('dialHints', n + 1);
+  const hint = $('#dialHint'), track = $('#dial');
+  hint.textContent = mq.matches ? 'Swipe the years, tap one to pick it' : 'Scroll or click a year';
+  hint.hidden = false;
+  if (!reduceMotion){
+    setTimeout(() => track.scrollBy({ left: -110, behavior: 'smooth' }), 700);
+    setTimeout(() => track.scrollBy({ left: 220, behavior: 'smooth' }), 1400);
+    setTimeout(() => track.scrollBy({ left: -110, behavior: 'smooth' }), 2100);
+  }
+  setTimeout(() => hint.classList.add('fade'), 3600);
+  setTimeout(() => { hint.hidden = true; hint.classList.remove('fade'); }, 4300);
+  track.addEventListener('pointerdown', () => { hint.hidden = true; }, { once: true });
+}
 
 /* ---------- boot ---------- */
 async function boot(){
@@ -2956,6 +3058,7 @@ async function boot(){
   }
   await loadYear(state.year);
   restoreSession();
+  setTimeout(dialDemo, 400);
 }
 boot();
 })();
