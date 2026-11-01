@@ -4,12 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>deadjams — Grateful Dead shows from the Internet Archive</title>
-<meta name="theme-color" content="#07102a">
+<meta name="theme-color" content="#07102a" id="themeMeta">
+<script>(()=>{try{const t=JSON.parse(localStorage.getItem("taperoom:theme"))||"system";const r=t==="system"?(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"):t;document.documentElement.dataset.theme=r;}catch(e){document.documentElement.dataset.theme="dark";}})();</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="deadjams">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f1f8ff'/><stop offset='.45' stop-color='%237a9dff'/><stop offset='1' stop-color='%23bba5ff'/></linearGradient><mask id='m'><circle cx='32' cy='32' r='30' fill='white'/><circle cx='32' cy='16' r='8.5' fill='black'/><circle cx='45.9' cy='40' r='8.5' fill='black'/><circle cx='18.1' cy='40' r='8.5' fill='black'/><circle cx='32' cy='32' r='4' fill='black'/></mask></defs><rect width='64' height='64' fill='url(%23g)' mask='url(%23m)'/></svg>">
+<link rel="icon" id="favLink" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f1f8ff'/><stop offset='.45' stop-color='%237a9dff'/><stop offset='1' stop-color='%23bba5ff'/></linearGradient><mask id='m'><circle cx='32' cy='32' r='30' fill='white'/><circle cx='32' cy='16' r='8.5' fill='black'/><circle cx='45.9' cy='40' r='8.5' fill='black'/><circle cx='18.1' cy='40' r='8.5' fill='black'/><circle cx='32' cy='32' r='4' fill='black'/></mask></defs><rect width='64' height='64' fill='url(%23g)' mask='url(%23m)'/></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" id="touchLink" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://archive.org" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,6 +26,14 @@
   --shadow:0 24px 60px -30px rgba(0,0,0,.85);
   --font:"Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --player-h:88px;
+}
+:root{--wm1:#f1f8ff;--wm2:#a6d4ff;--wm3:#7a9dff;--wm4:#bba5ff;--wm5:#e9f4ff;--wmShadow:#020617}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#eef2fb; --surface:rgba(255,255,255,.74); --surface-solid:#ffffff; --surface2:rgba(20,40,100,.05); --ink:#0c1633; --muted:#55648a;
+  --line:rgba(20,40,100,.13); --accent:#2457d6; --accent-soft:rgba(36,87,214,.1); --accent-ink:#ffffff; --teal:#0d8a7c; --gold:#c4860f;
+  --hot:linear-gradient(135deg,#2f6bff,#3d9bff 60%,#5cc0ff); --shadow:0 24px 60px -34px rgba(20,40,100,.35);
+  --wm1:#163a9e;--wm2:#2f6bff;--wm3:#5b3fd6;--wm4:#1f86c9;--wm5:#1b2f8a;--wmShadow:#ffffff;
 }
 @property --a{syntax:"<angle>";inherits:false;initial-value:0deg}
 @keyframes spin{to{--a:360deg}}
@@ -43,6 +54,8 @@ body::after{content:"";position:fixed;inset:0;z-index:15;pointer-events:none;opa
 @media (prefers-reduced-motion: reduce){.bgfx{animation:none}}
 *{box-sizing:border-box}
 html,body{height:100%}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
+body{overflow-x:hidden;touch-action:manipulation}
 body{margin:0;background:transparent;color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;
   font-optical-sizing:auto;-webkit-font-smoothing:antialiased;
   padding-bottom:calc(var(--player-h) + env(safe-area-inset-bottom,0px));}
@@ -54,6 +67,8 @@ button{cursor:pointer}
 /* Header */
 .top{display:flex;align-items:center;gap:20px;padding:calc(18px + env(safe-area-inset-top,0px)) 28px 10px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.mark{width:50px;height:50px;flex:0 0 auto;border-radius:12px;object-fit:cover;box-shadow:0 2px 10px rgba(2,6,23,.45)}
+.mark[hidden]{display:none}
 .reel{width:50px;height:50px;flex:0 0 auto;overflow:visible;filter:drop-shadow(0 2px 3px rgba(2,6,23,.7));animation:reelspin 14s linear infinite;animation-play-state:paused}
 body.playing .reel{animation-play-state:running}
 @keyframes reelspin{to{transform:rotate(360deg)}}
@@ -236,10 +251,40 @@ input[type=range].bar::-moz-range-thumb{width:14px;height:14px;border-radius:50%
 .eq-note{font-size:13px;color:var(--muted);margin:10px 0 0}
 .eq.off .bands{opacity:.45}
 
-.toast{position:fixed;z-index:50;left:50%;bottom:calc(var(--player-h) + 18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);
+.toast{position:fixed;z-index:70;left:50%;bottom:calc(var(--player-h) + 18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);
   padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(520px,90vw);box-shadow:var(--shadow)}
 .toast[hidden]{display:none}
 
+
+/* Light mode */
+[data-theme="light"] .bgfx{background:
+  radial-gradient(45% 38% at 10% 6%, rgba(90,140,255,.28), transparent 70%),
+  radial-gradient(38% 32% at 94% 12%, rgba(120,190,255,.22), transparent 70%),
+  radial-gradient(50% 42% at 75% 100%, rgba(140,120,255,.16), transparent 70%),
+  linear-gradient(175deg,#f5f8ff 0%,#eaf0fc 55%,#e2e9f8 100%)}
+[data-theme="light"] body::after{opacity:.05}
+[data-theme="light"] .btn{background:rgba(255,255,255,.8);border-color:rgba(36,87,214,.28)}
+[data-theme="light"] .btn:hover{background:#fff;border-color:rgba(36,87,214,.55)}
+[data-theme="light"] .ic{background:rgba(36,87,214,.07);border-color:rgba(36,87,214,.2)}
+[data-theme="light"] .ic:hover{background:rgba(36,87,214,.14)}
+[data-theme="light"] .player{background:rgba(250,252,255,.86)}
+[data-theme="light"] .btn.primary,[data-theme="light"] .btn.primary:hover{background:var(--hot);color:#fff;border-color:transparent}
+[data-theme="light"] .ic.play,[data-theme="light"] .ic.play:hover{background:var(--hot);color:#fff;border:0}
+[data-theme="light"] .ic.play svg{fill:#fff}
+[data-theme="light"] .eq{background:rgba(255,255,255,.96)!important}
+[data-theme="light"] .yr[aria-pressed="true"] .lbl{color:var(--ink);text-shadow:0 0 24px rgba(36,87,214,.25)}
+[data-theme="light"] .yr .ticks i{background:rgba(20,40,100,.18)}
+[data-theme="light"] .yr .ticks i:nth-child(3){background:rgba(20,40,100,.4)}
+[data-theme="light"] .tab{color:#5b6a90}
+[data-theme="light"] .chip{background:rgba(36,87,214,.05);border-color:rgba(36,87,214,.25)}
+[data-theme="light"] .badge{background:rgba(13,138,124,.08)}
+[data-theme="light"] .reel{filter:drop-shadow(0 2px 3px rgba(20,40,100,.25))}
+[data-theme="light"] .tripbtn{color:#fff;background:linear-gradient(135deg,#2f6bff,#6b5cff);border-color:transparent}
+[data-theme="light"] .toast{background:#0c1633;color:#fff}
+@media (max-width:900px){
+  [data-theme="light"] .list-head,[data-theme="light"] .back{background:rgba(255,255,255,.95)}
+  [data-theme="light"] body::before{background:#eef2fb}
+}
 /* Now playing screen (phones) */
 .sheet{position:fixed;inset:0;z-index:30;background:radial-gradient(60% 40% at 15% 8%,rgba(47,91,255,.38),transparent 70%),radial-gradient(50% 40% at 95% 65%,rgba(64,150,220,.18),transparent 70%),linear-gradient(175deg,#0e1d4a,#050c22);display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:contain;
   padding:env(safe-area-inset-top,0px) 22px calc(26px + env(safe-area-inset-bottom,0px));animation:up .3s cubic-bezier(.2,.8,.2,1)}
@@ -254,10 +299,12 @@ input[type=range].bar::-moz-range-thumb{width:14px;height:14px;border-radius:50%
 .sh-track{margin:0;font-size:clamp(28px,8.5vw,42px);line-height:1.06;letter-spacing:-.03em;font-weight:750;overflow-wrap:anywhere}
 .sh-pos{margin:6px 0 24px;color:var(--muted);font-size:14px}
 .sh-seek{font-size:14px}
-.sh-ctrls{display:flex;justify-content:center;align-items:center;gap:30px;margin:20px 0 28px}
-.sh-ctrls .ic{width:60px;height:60px}
+.sh-ctrls{display:flex;justify-content:center;align-items:center;gap:14px;margin:18px 0 26px}
+.sh-ctrls .ic{width:54px;height:54px}
+.sh-ctrls .ic.sk{width:46px;height:46px}
+.sh-ctrls .ic.sk svg{width:26px;height:26px}
 .sh-ctrls .ic svg{width:32px;height:32px}
-.sh-ctrls .ic.play{width:80px;height:80px}
+.sh-ctrls .ic.play{width:76px;height:76px}
 .sh-ctrls .ic.play svg{width:36px;height:36px}
 .sh-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 body.trip-open{overflow:hidden}
@@ -270,13 +317,13 @@ body.trip-open{overflow:hidden}
   padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 .trip[hidden]{display:none}
 .trip-scrim{position:absolute;inset:0;background:rgba(2,6,20,.74);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;animation:tfade .3s ease}
-.trip-box{position:relative;width:min(1200px,calc(100vw - 56px));height:min(780px,calc(100dvh - 110px));border-radius:28px;overflow:hidden;background:#030612;
+.trip-box{position:relative;width:min(1200px,calc(100vw - 56px));height:min(780px,calc(100vh - 110px));height:min(780px,calc(100svh - 110px));border-radius:28px;overflow:hidden;background:#030612;
   border:1px solid rgba(160,195,255,.24);box-shadow:0 40px 120px -30px rgba(0,0,0,.9),0 0 90px -30px rgba(61,123,255,.55);animation:tin .38s cubic-bezier(.2,.8,.2,1)}
 .trip-box canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity .35s ease}
 .trip-box canvas.fade{opacity:0}
 .trip-x{position:absolute;top:14px;right:14px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;padding:0;cursor:pointer;
-  color:rgb(var(--cdl,200,220,255));border:1.5px solid rgba(var(--cd,120,160,255),.85);background:rgba(3,6,18,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  box-shadow:0 0 16px -6px rgba(var(--cd,120,160,255),.9);transition:border-color .6s,color .6s}
+  color:rgb(var(--cxl,200,220,255));border:1.5px solid rgba(var(--cx,120,160,255),.85);background-image:linear-gradient(rgba(var(--cx,120,160,255),.14),rgba(var(--cx,120,160,255),.14));background:rgba(3,6,18,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 0 16px -6px rgba(var(--cx,120,160,255),.9)}
 .trip-x svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
 .trip-x:hover{background:rgba(3,6,18,.65)}
 .trip-need{position:absolute;left:50%;top:22px;translate:-50% 0;margin:0;max-width:calc(100% - 140px);text-align:center;font-size:14px;font-weight:600;
@@ -302,6 +349,88 @@ body.trip-open{overflow:hidden}
 @keyframes bob{50%{transform:translateY(-4px)}}
 @keyframes hop{0%{transform:translateY(0)}28%{transform:translateY(-22px) scale(1.07)}58%{transform:translateY(0)}74%{transform:translateY(-6px)}100%{transform:translateY(0)}}
 @media (prefers-reduced-motion: reduce){#bDice .wrap{animation:none}#bDice .cube{transition-duration:.01ms}}
+
+/* Sets, segues, hearts, timeline, library */
+.set-h{list-style:none;margin:18px 6px 6px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.set-h:first-child{margin-top:4px}
+.tracks li{display:flex;align-items:center}
+.tracks li .trk{flex:1;min-width:0}
+.seg-arrow{color:var(--accent);font-weight:800;margin-left:8px}
+.trk.suite .n{box-shadow:inset -2px 0 0 var(--accent)}
+.stroke{fill:none!important;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.heart{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:0;background:none;color:var(--muted);display:grid;place-items:center;padding:0}
+.heart svg{width:20px;height:20px}
+.heart[aria-pressed="true"]{color:#ff5c8a}
+.heart[aria-pressed="true"] svg{fill:currentColor!important}
+.heartbtn{display:inline-flex;align-items:center;gap:8px}
+.heartbtn svg{width:18px;height:18px}
+.heartbtn[aria-pressed="true"]{color:#ff5c8a;border-color:rgba(255,92,138,.6)}
+.heartbtn[aria-pressed="true"] svg{fill:currentColor!important}
+.ic svg.stroke{fill:none}
+.ic.sk svg{width:24px;height:24px}
+.ic.sk text{fill:currentColor;stroke:none}
+.timeline{display:flex;gap:2px;height:8px;margin:2px 0 4px;cursor:pointer}
+.timeline:empty{display:none}
+.timeline i{position:relative;display:block;height:100%;border-radius:3px;background:var(--line);overflow:hidden;min-width:3px}
+.timeline i.gap{margin-left:6px}
+.timeline i.done{background:color-mix(in srgb,var(--accent) 55%,transparent)}
+.timeline i.cur{background:var(--line)}
+.timeline i.cur b{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#3d7bff,#8fd8ff)}
+#timelineD{height:5px;margin:0 54px}
+.sec-h{list-style:none;padding:14px 10px 6px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.fsong{width:100%;display:grid;grid-template-columns:1fr auto;gap:2px 10px;text-align:left;border:0;background:none;padding:10px;border-radius:12px;color:var(--ink)}
+.fsong:hover{background:var(--surface2)}
+.fsong b{font-weight:650}
+.fsong small{grid-column:1;color:var(--muted);font-size:13px}
+.fsong span{grid-row:1/3;grid-column:2;align-self:center;color:var(--accent);font-weight:700;font-size:13px}
+.withprev{display:flex;align-items:center}
+.withprev .show{flex:1;min-width:0}
+.pv{flex:0 0 auto;height:34px;padding:0 11px;margin-right:6px;border-radius:999px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);font-size:12.5px;font-weight:700;white-space:nowrap}
+.vlen{color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}
+.stats{flex-basis:100%;font-size:13px;color:var(--muted)}
+.stats p{margin:0 0 8px;line-height:1.45}
+.bars{display:flex;align-items:flex-end;gap:2px;height:42px}
+.bars i{flex:1;background:linear-gradient(#8fd8ff,#3d7bff);border-radius:2px 2px 0 0;min-height:1px;opacity:.85}
+.bars-x{display:flex;justify-content:space-between;font-size:11px;margin-top:3px}
+.sotd{border:1px solid var(--line);background:linear-gradient(135deg,var(--accent-soft),transparent);border-radius:20px;padding:16px 18px;margin:0 0 22px}
+.sotd .k{margin:0;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.sotd h3{margin:4px 0 2px;font-size:26px;font-weight:850;letter-spacing:-.03em}
+.sotd p{margin:0 0 12px;color:var(--muted)}
+.sotd .row{display:flex;gap:8px;flex-wrap:wrap}
+.sotd-m{display:none}
+.hl{border-left:3px solid var(--accent);padding:4px 0 4px 14px;margin:0 0 14px;max-width:72ch}
+.hl p{margin:0 0 4px;line-height:1.5}
+.hl small{color:var(--muted)}
+.rev-k{margin:0 0 12px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+
+/* Settings */
+.settings{position:fixed;inset:0;z-index:58;display:grid;place-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) 14px calc(16px + env(safe-area-inset-bottom,0px))}
+.settings[hidden]{display:none}
+.set-scrim{position:absolute;inset:0;background:rgba(2,6,20,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:tfade .25s ease}
+.set-panel{position:relative;width:min(460px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;padding:8px 20px 20px;border-radius:24px;
+  background:var(--surface-solid);border:1px solid var(--line);box-shadow:var(--shadow);animation:tin .3s cubic-bezier(.2,.8,.2,1)}
+.set-head{display:flex;align-items:center;justify-content:space-between;position:sticky;top:-8px;padding:14px 0 10px;background:var(--surface-solid);z-index:1}
+.set-head h2{margin:0;font-size:24px;font-weight:850;letter-spacing:-.03em}
+.set-x{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--surface2);color:var(--ink)}
+.set-x svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
+.set-group{margin-top:16px}
+.set-group h3{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.02em;text-transform:uppercase}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;padding:10px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface2);font-weight:650;font-size:14px;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--hot);color:var(--accent-ink);border-color:transparent}
+.set-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;padding:13px 14px;margin-bottom:8px;border-radius:16px;
+  border:1px solid var(--line);background:var(--surface2);color:var(--ink);font-weight:650;font-size:15px;cursor:pointer}
+.set-row small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
+.set-row b{color:var(--accent);font-size:14px;white-space:nowrap}
+.set-row input{width:22px;height:22px;accent-color:var(--accent);flex:0 0 auto}
+.icon-tools{display:flex;align-items:center;gap:10px;margin:2px 0 8px;flex-wrap:wrap}
+.icon-tools img{width:48px;height:48px;border-radius:12px;object-fit:cover;border:1px solid var(--line)}
+.set-credit summary{cursor:pointer;font-weight:650;color:var(--ink)}
+.set-credit ul{margin:8px 0 0;padding-left:18px}
+.set-credit li{margin:0 0 6px}
+.set-credit{margin:18px 0 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+.eqtxt{width:auto!important;padding:0 14px;border-radius:999px!important;font-weight:700;font-size:14px;gap:6px;display:inline-flex!important;align-items:center}
+.eqtxt span{color:var(--accent);font-weight:650}
 
 /* Car mode */
 .carTop{display:none}
@@ -347,11 +476,15 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   button{touch-action:manipulation}
   .top{padding:calc(12px + env(safe-area-inset-top,0px)) 12px 2px;gap:10px}
   .wordmark svg{height:44px}
-  .reel{width:40px;height:40px}
+  .reel,.mark{width:40px;height:40px}
   .brand p{display:none}
   .tools{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .search{grid-column:1/-1}
-  .carTop{display:inline-flex;justify-content:center}
+  .tools{grid-template-columns:repeat(4,1fr)!important}
+  .tools .btn{font-size:14px}
+  .sotd-m{display:block;padding:12px 12px 0}
+  .sotd-m .sotd{margin:0}
+  #timelineD{display:none}
   .tools .btn{justify-content:center;padding:9px 8px}
   .search input{width:100%;font-size:16px;padding:10px 12px 10px 36px}
   .btn{padding:9px 13px}
@@ -400,9 +533,9 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   .right .vol,.right .volic{display:none}
   .mplay,.mnext{display:grid}
   .right .ic{width:44px;height:44px}
-  .right #eqBtn{display:none}
+  .right #eqBtn,.right #castBtn{display:none}
   .right .tripbtn{height:40px;padding:0 13px;font-size:14px;margin-left:4px}
-  .trip-box{width:calc(100vw - 24px);height:calc(100dvh - 96px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));border-radius:22px}
+  .trip-box{width:calc(100vw - 24px);height:calc(100vh - 96px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));height:calc(100svh - 96px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));border-radius:22px}
 
   /* EQ as a bottom sheet with horizontal sliders */
   .eq{left:0;right:0;bottom:0;width:100%;border-radius:20px 20px 0 0;padding:16px 18px calc(20px + env(safe-area-inset-bottom,0px));max-height:85vh;overflow-y:auto;z-index:40}
@@ -420,6 +553,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
 <div class="bgfx" aria-hidden="true"></div>
 <header class="top">
   <div class="brand">
+    <img class="mark" id="markImg" alt="" hidden>
     <svg class="reel" viewBox="0 0 64 64" aria-hidden="true">
       <defs>
         <mask id="reelMask" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
@@ -437,11 +571,11 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
         <title>deadjams</title>
         <defs>
           <linearGradient id="wmBands" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="72" y2="26" spreadMethod="reflect">
-            <stop offset="0" stop-color="#f1f8ff"/>
-            <stop offset=".3" stop-color="#a6d4ff"/>
-            <stop offset=".55" stop-color="#7a9dff"/>
-            <stop offset=".78" stop-color="#bba5ff"/>
-            <stop offset="1" stop-color="#e9f4ff"/>
+            <stop offset="0" style="stop-color:var(--wm1)"/>
+            <stop offset=".3" style="stop-color:var(--wm2)"/>
+            <stop offset=".55" style="stop-color:var(--wm3)"/>
+            <stop offset=".78" style="stop-color:var(--wm4)"/>
+            <stop offset="1" style="stop-color:var(--wm5)"/>
             <animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="144 52" dur="48s" repeatCount="indefinite"/>
           </linearGradient>
           <filter id="wmWarp" filterUnits="userSpaceOnUse" x="-60" y="-60" width="420" height="200">
@@ -456,7 +590,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
           </mask>
         </defs>
         <text x="4" y="57" font-family="'Unbounded', 'Schibsted Grotesk', sans-serif" font-weight="900" font-size="52" textLength="288" lengthAdjust="spacingAndGlyphs" fill="#3d7bff" opacity=".4" filter="url(#wmGlow)">deadjams</text>
-        <text x="4" y="57" font-family="'Unbounded', 'Schibsted Grotesk', sans-serif" font-weight="900" font-size="52" textLength="288" lengthAdjust="spacingAndGlyphs" fill="#020617" opacity=".7" transform="translate(1.5 2.5)">deadjams</text>
+        <text x="4" y="57" font-family="'Unbounded', 'Schibsted Grotesk', sans-serif" font-weight="900" font-size="52" textLength="288" lengthAdjust="spacingAndGlyphs" style="fill:var(--wmShadow)" opacity=".7" transform="translate(1.5 2.5)">deadjams</text>
         <g mask="url(#wmMask)"><g filter="url(#wmWarp)"><rect x="-50" y="-50" width="400" height="180" fill="url(#wmBands)"/></g></g>
       </svg>
     </h1>
@@ -470,7 +604,8 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     </form>
     <button class="btn" id="otd"><span class="lg">On this day</span><span class="sm">Today</span></button>
     <button class="btn" id="random"><span class="lg">Random show</span><span class="sm">Random</span></button>
-    <button class="btn carTop" id="carTop">Car mode</button>
+    <button class="btn" id="libBtn">Library</button>
+    <button class="btn" id="setBtn">Settings</button>
   </div>
 </header>
 
@@ -478,6 +613,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
 
 <main class="layout">
   <section class="pane list-pane" aria-label="Shows">
+    <div class="sotd-m" id="sotdMobile"></div>
     <div class="list-head">
       <h2><span id="listTitle">1977</span><span class="count" id="count"></span></h2>
       <select id="sort" aria-label="Sort shows">
@@ -485,8 +621,10 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
         <option value="date">By date</option>
         <option value="reviews">Most reviewed</option>
         <option value="popular">Most played</option>
+        <option value="longest" hidden>Longest version</option>
       </select>
       <p class="list-sub" id="listSub" hidden></p>
+      <div class="stats" id="songStats" hidden></div>
       <label class="lfilter"><span class="sr">Filter this list</span><input id="filter" type="search" placeholder="Filter by venue, city, or date" autocomplete="off"></label>
     </div>
     <ul id="list"></ul>
@@ -513,10 +651,13 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   </button>
   <div class="center">
     <div class="ctrls">
+      <button class="ic sk" id="back15" aria-label="Back 15 seconds" disabled><svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="6.4" font-weight="700" font-family="system-ui,sans-serif">15</text></svg></button>
       <button class="ic" id="prev" aria-label="Previous track" disabled><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
       <button class="ic play" id="play" aria-label="Play" disabled><svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z"/></svg></button>
       <button class="ic" id="next" aria-label="Next track" disabled><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+      <button class="ic sk" id="fwd15" aria-label="Forward 15 seconds" disabled><svg viewBox="0 0 24 24"><path d="M12 5V2l5 4-5 4V7a6 6 0 1 0 6 6h2a8 8 0 1 1-8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="6.4" font-weight="700" font-family="system-ui,sans-serif">15</text></svg></button>
     </div>
+    <div class="timeline" id="timelineD" aria-hidden="true"></div>
     <div class="seek">
       <span id="cur">0:00</span>
       <input type="range" class="bar" id="seek" min="0" max="1000" value="0" aria-label="Seek" disabled>
@@ -528,8 +669,9 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     <button class="ic mnext" id="mnext" aria-label="Next track" disabled><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
     <button class="ic volic" id="mute" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
     <input type="range" class="bar vol" id="vol" min="0" max="100" value="90" aria-label="Volume">
+    <button class="ic castbtn" id="castBtn" aria-label="Play on a speaker or TV" title="Play on a speaker or TV" hidden><svg viewBox="0 0 24 24" class="stroke"><rect x="7" y="3" width="10" height="18" rx="2.5"/><circle cx="12" cy="14.5" r="2.6"/><circle cx="12" cy="7.5" r="1"/><path d="M3.5 8.5a8 8 0 0 0 0 7M20.5 8.5a8 8 0 0 1 0 7"/></svg></button>
     <button class="tripbtn" id="tripBtn">Trip out</button>
-    <button class="ic" id="eqBtn" aria-label="Equalizer" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M5 3h2v8H5zm0 12h2v6H5zM3 11h6v2H3zm8-8h2v4h-2zm0 8h2v10h-2zm-2-4h6v2H9zm8-4h2v10h-2zm0 14h2v2h-2zm-2-2h6v2h-6z"/></svg></button>
+    <button class="ic eqtxt" id="eqBtn" aria-expanded="false">EQ <span id="eqLabel">Flat</span></button>
   </div>
 </footer>
 
@@ -550,12 +692,15 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
       <input type="range" class="bar" id="shSeek" min="0" max="1000" value="0" aria-label="Seek" disabled>
       <span id="shDur">0:00</span>
     </div>
+    <div class="timeline" id="timeline"></div>
     <div class="sh-ctrls">
+      <button class="ic sk" id="shBack15" aria-label="Back 15 seconds"><svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="6.4" font-weight="700" font-family="system-ui,sans-serif">15</text></svg></button>
       <button class="ic" id="shPrev" aria-label="Previous track"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
       <button class="ic play" id="shPlay" aria-label="Play" disabled><svg viewBox="0 0 24 24" id="shPlayIcon"><path d="M8 5v14l11-7z"/></svg></button>
       <button class="ic" id="shNext" aria-label="Next track"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+      <button class="ic sk" id="shFwd15" aria-label="Forward 15 seconds"><svg viewBox="0 0 24 24"><path d="M12 5V2l5 4-5 4V7a6 6 0 1 0 6 6h2a8 8 0 1 1-8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="6.4" font-weight="700" font-family="system-ui,sans-serif">15</text></svg></button>
     </div>
-    <div class="sh-actions"><button class="btn" id="shShow">View set list</button><button class="tripbtn" id="shTrip">Trip out</button><button class="btn" id="shCar">Car mode</button></div>
+    <div class="sh-actions"><button class="btn" id="shShow">View set list</button><button class="tripbtn" id="shTrip">Trip out</button><button class="btn" id="shEq">Equalizer</button><button class="btn" id="shCast" hidden>Speakers</button></div>
   </div>
 </div>
 
@@ -586,6 +731,41 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   <p class="car-note">Music keeps going when your phone locks, shows roll into the next one, and your steering wheel buttons and CarPlay's Now Playing screen control it. The equalizer and visuals rest in car mode.</p>
 </div>
 
+<div class="settings" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="set-scrim" id="setScrim"></div>
+  <section class="set-panel">
+    <div class="set-head"><h2 id="setTitle">Settings</h2>
+      <button class="set-x" id="setClose" aria-label="Close settings"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="set-group">
+      <h3>Appearance</h3>
+      <div class="seg" id="themeSeg" role="group" aria-label="Appearance">
+        <button data-v="system">Match device</button><button data-v="light">Light</button><button data-v="dark">Dark</button>
+      </div>
+    </div>
+    <div class="set-group">
+      <h3>Sound</h3>
+      <button class="set-row" id="setEq"><span>Equalizer<small id="setEqVal">Flat</small></span><b>Open</b></button>
+    </div>
+    <div class="set-group">
+      <h3>Playback</h3>
+      <button class="set-row" id="setCast"><span>Speakers and TVs<small>Send the music to AirPlay or Cast devices on your network</small></span><b>Choose</b></button>
+      <label class="set-row"><span>Keep playing<small>When a show ends, start the next one in the list</small></span><input type="checkbox" id="setAuto"></label>
+      <button class="set-row" id="setCar"><span>Car mode<small>Big controls, and music keeps going when your phone locks</small></span><b>Open</b></button>
+    </div>
+    <div class="set-group">
+      <h3>Trip out</h3>
+      <label class="set-row"><span>Band photos<small>Now and then, a photo of the band drifts through the visuals</small></span><input type="checkbox" id="setPhotos"></label>
+      <label class="set-row"><span>Screensaver<small>Trip out opens after 3 quiet minutes while music plays. Hold the dice to save a looping GIF.</small></span><input type="checkbox" id="setSaver"></label>
+    </div>
+    <div class="set-group">
+      <h3>Saved data</h3>
+      <button class="set-row" id="setClear"><span>Clear saved shows<small>Lists and set lists kept on this device for faster loading</small></span><b>Clear</b></button>
+    </div>
+    <p class="set-credit">Recordings, set lists, ratings, and notes come from the Internet Archive's Grateful Dead collection.</p>
+    <details class="set-credit"><summary>Trip out photo credits</summary><p>Public domain and Creative Commons photos from Wikimedia Commons, tinted and blended into the visuals.</p><ul id="photoCredits"></ul></details>
+  </section>
+</div>
+
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -606,7 +786,7 @@ const store = {
 const state = {
   mode: 'year', year: store.get('year', 1977), label: '',
   shows: [], loading: false, error: null,
-  filter: '', sort: 'rating', sortAuto: false, song: null, recOpen: false, car: false,
+  verLen: {}, filter: '', sort: 'rating', sortAuto: false, song: null, recOpen: false, car: false,
   current: null, sourceId: null, meta: null, metaError: null, tab: 'setlist', allReviews: false,
   queue: null
 };
@@ -818,7 +998,7 @@ async function loadYear(y, keepDetail){
   await loadList(fetchFull, () => quickPage(q));
 }
 async function searchSong(q){
-  state.mode = 'song'; state.song = q; state.label = q;
+  state.mode = 'song'; state.song = q; state.label = q; state.verLen = {}; $('#sort option[value="longest"]').hidden = false;
   state.sort = 'rating'; state.sortAuto = true; $('#sort').value = 'rating';
   state.filter = ''; $('#filter').value = '';
   markDial();
@@ -865,10 +1045,13 @@ async function loadList(getter, preview){
 }
 function leaveSong(){
   state.song = null; $('#songq').value = '';
+  $('#sort option[value="longest"]').hidden = true; if (state.sort === 'longest'){ state.sort = 'rating'; $('#sort').value = 'rating'; }
+  $('#songStats').hidden = true;
   state.sortAuto = false;
 }
 function visible(){
   let list = state.shows;
+  if (state.mode === 'library') return list;
   const f = state.filter.trim().toLowerCase();
   if (f) list = list.filter(g => `${g.date} ${g.venue} ${g.coverage} ${fmtLong(g.date)}`.toLowerCase().includes(f));
   const bayes = g => (g.rating * g.reviews + 3.6 * 4) / (g.reviews + 4);
@@ -876,7 +1059,8 @@ function visible(){
     date: (a, b) => a.date.localeCompare(b.date),
     rating: (a, b) => bayes(b) - bayes(a),
     reviews: (a, b) => b.reviews - a.reviews,
-    popular: (a, b) => b.downloads - a.downloads
+    popular: (a, b) => b.downloads - a.downloads,
+    longest: (a, b) => (state.verLen[b.date] || -1) - (state.verLen[a.date] || -1)
   };
   return list.slice().sort(sorters[state.sort]);
 }
@@ -885,6 +1069,7 @@ function renderList(){
   const sub = $('#listSub');
   const hintPick = mq.matches && !state.current;
   sub.hidden = state.mode !== 'song' && !hintPick;
+  renderStats();
   sub.textContent = state.mode === 'song' ? 'Shows whose set list mentions this song. Sort by rating to find the best versions.' : 'Select a show to see its set list and play it.';
   const ul = $('#list');
   if (state.loading){ $('#count').textContent = ''; ul.innerHTML = '<li class="skel"></li>'.repeat(8); return; }
@@ -894,6 +1079,7 @@ function renderList(){
     $('#retry').onclick = () => loadList(state.retry);
     return;
   }
+  if (state.mode === 'library') return renderLibrary(ul);
   const list = visible();
   $('#count').textContent = state.partial ? 'loading the rest…' : list.length ? `${list.length} show${list.length === 1 ? '' : 's'}` : '';
   if (!list.length){
@@ -901,28 +1087,138 @@ function renderList(){
     return;
   }
   const showYear = state.mode !== 'year';
-  ul.innerHTML = list.map(g => `
-    <li><button class="show" data-date="${g.date}" aria-current="${state.current?.date === g.date}">
+  if (state.mode === 'library') return renderLibrary(ul);
+  ul.innerHTML = list.map(g => itemHTML(g, showYear)).join('');
+  if (state.mode === 'song') queueVersionLengths(list);
+}
+function itemHTML(g, showYear){
+  const vl = state.mode === 'song' ? state.verLen[g.date] : null;
+  const btn = `<button class="show" data-date="${g.date}" aria-current="${state.current?.date === g.date}">
       <span class="s-date"><b>${showYear ? g.date.slice(0, 4) : esc(fmtShort(g.date))}</b><small>${showYear ? esc(fmtShort(g.date)) : esc(fmtDow(g.date))}</small></span>
       <span><span class="s-venue">${esc(g.venue)}</span><span class="s-city">${esc(g.coverage)}</span></span>
       <span class="s-meta">
         ${g.reviews ? `<span class="rating">${starHTML(g.rating)}<span>${g.reviews}</span></span>` : '<span>No reviews</span>'}
-        <span>${g.hasSbd ? '<span class="badge">SBD</span> ' : ''}${g.sources.length} tape${g.sources.length === 1 ? '' : 's'}</span>
+        <span>${vl > 0 ? `<span class="vlen">${clock(vl)}</span> ` : ''}${g.hasSbd ? '<span class="badge">SBD</span> ' : ''}${g.sources.length} tape${g.sources.length === 1 ? '' : 's'}</span>
       </span>
-    </button></li>`).join('');
+    </button>`;
+  return state.mode === 'song' ? `<li class="withprev">${btn}<button class="pv" data-pv="${g.date}" aria-label="Preview this version">▶ 30s</button></li>` : `<li>${btn}</li>`;
+}
+function renderLibrary(ul){
+  const f = favs(), saved = Object.values(f.shows).sort((a, b) => b.at - a.at), hist = store.get('history', []);
+  const sec = (t, body) => `<li class="sec-h">${t}</li>${body}`;
+  let html = '';
+  html += sec('Saved shows', saved.length ? saved.map(g => `<li>${itemHTML(g, true).replace(/^<li>|<\/li>$/g, '')}</li>`).join('') : '<li class="empty-list">Tap Save show on any show to keep it here.</li>');
+  html += sec('Saved songs', f.songs.length ? f.songs.map((x, i) => `<li><button class="fsong" data-fs="${i}"><b>${esc(x.title)}</b><small>${esc(fmtShort(x.g.date))} ${x.g.date.slice(0, 4)}, ${esc(x.g.venue)}</small><span>Play</span></button></li>`).join('') : '<li class="empty-list">Tap the heart next to a song to save that version.</li>');
+  html += sec('Recently played', hist.length ? hist.map(g => `<li>${itemHTML(g, true).replace(/^<li>|<\/li>$/g, '')}</li>`).join('') : '<li class="empty-list">Shows you play will show up here.</li>');
+  ul.innerHTML = html;
+  $('#count').textContent = '';
 }
 const warmShow = e => { const b = e.target.closest && e.target.closest('.show'); if (!b) return; const g = state.shows.find(x => x.date === b.dataset.date); if (g) fetchMeta(g.sources[0].identifier).then(m => preconnect(m.server)).catch(() => {}); };
 $('#list').addEventListener('pointerover', warmShow);
 $('#list').addEventListener('touchstart', warmShow, { passive: true });
 $('#list').addEventListener('click', e => {
+  const pv = e.target.closest('.pv'); if (pv){ previewVersion(pv.dataset.pv, pv); return; }
+  const fs = e.target.closest('.fsong'); if (fs){ playSavedSong(favs().songs[+fs.dataset.fs]); return; }
   const b = e.target.closest('.show'); if (!b) return;
   const g = state.shows.find(x => x.date === b.dataset.date);
   if (g) openShow(g);
 });
 
+// Song stats from the list itself: how many shows mention it, first and last, and a bar per year
+function renderStats(){
+  const el = $('#songStats');
+  if (state.mode !== 'song' || state.loading || !state.shows.length){ el.hidden = true; return; }
+  const ds = state.shows.map(g => g.date).sort(), counts = {};
+  ds.forEach(d => { const y = +d.slice(0, 4); counts[y] = (counts[y] || 0) + 1; });
+  const ys = Object.keys(counts).map(Number), peak = ys.reduce((a, y) => counts[y] > counts[a] ? y : a, ys[0]);
+  const max = Math.max(...Object.values(counts));
+  let bars = ''; for (let y = FIRST; y <= LAST; y++) bars += `<i style="height:${((counts[y] || 0) / max) * 100}%" title="${y}: ${counts[y] || 0}"></i>`;
+  el.innerHTML = `<p>${state.shows.length} shows mention it. First ${esc(fmtShort(ds[0]))} ${ds[0].slice(0, 4)}, last ${esc(fmtShort(ds[ds.length - 1]))} ${ds[ds.length - 1].slice(0, 4)}, most in ${peak}${state.partial ? ' (still counting)' : ''}.</p>
+    <div class="bars">${bars}</div><div class="bars-x"><span>${FIRST}</span><span>1980</span><span>${LAST}</span></div>`;
+  el.hidden = false;
+}
+// Version explorer: look up how long each show's version runs, a few at a time
+let verQueue = [], verBusy = 0, verRender = 0;
+function queueVersionLengths(list){
+  const song = state.song;
+  verQueue = list.slice(0, 60).filter(g => !(g.date in state.verLen)).map(g => ({ g, song }));
+  for (let i = verBusy; i < 3; i++) pumpVersions();
+}
+function pumpVersions(){
+  const job = verQueue.shift(); if (!job) return;
+  verBusy++;
+  fetchMeta(job.g.sources[0].identifier).then(m => {
+    if (state.song !== job.song) return;
+    const i = matchIndex(m); state.verLen[job.g.date] = i >= 0 ? m.tracks[i].len : 0;
+    clearTimeout(verRender); verRender = setTimeout(() => { if (state.mode === 'song') { const y = window.scrollY; renderList(); window.scrollTo(0, y); } }, 600);
+  }).catch(() => {}).finally(() => { verBusy--; pumpVersions(); });
+}
+let previewT = 0;
+async function previewVersion(date, btn){
+  const g = state.shows.find(x => x.date === date); if (!g) return;
+  btn.textContent = '…';
+  try {
+    const m = await fetchMeta(g.sources[0].identifier); const i = Math.max(0, matchIndex(m));
+    state.queue = { id: m.id, tracks: m.tracks, show: g, index: i, preview: true };
+    loadTrack(i); haptic();
+    clearTimeout(previewT);
+    previewT = setTimeout(() => { if (state.queue && state.queue.preview && state.queue.show === g) audio.pause(); }, 30000);
+  } catch { toast("That version didn't load."); }
+  btn.textContent = '▶ 30s';
+}
+async function playSavedSong(f){
+  if (!f) return;
+  const g = f.g;
+  openShow(g, f.id);
+  try { const m = await fetchMeta(f.id); state.queue = { id: m.id, tracks: m.tracks, show: g, index: Math.min(f.index, m.tracks.length - 1) }; loadTrack(state.queue.index); }
+  catch { toast("That show didn't load."); }
+}
+function openLibrary(){
+  state.mode = 'library'; leaveSong(); state.label = 'Library';
+  const f = favs(), all = [...Object.values(f.shows), ...store.get('history', [])];
+  const seen = new Set(); state.shows = all.filter(g => !seen.has(g.date) && seen.add(g.date));
+  state.loading = false; state.partial = false; state.error = null;
+  markDial(); renderList();
+  if (document.body.classList.contains('viewing') && mq.matches) closeDetail();
+}
+// Show of the day: the best-loved show played on today's date
+let sotd = null;
+async function loadSotd(){
+  const now = new Date(), mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
+  let g = LS.get('sotd:' + mm + dd, 864e5);
+  if (!g){
+    try {
+      const docs = (await search(`collection:GratefulDead AND identifier:gd*-${mm}-${dd}*`)).filter(d => String(one(d.date) || '').slice(5, 10) === `${mm}-${dd}`);
+      const groups = groupDocs(docs), bayes = x => (x.rating * x.reviews + 3.6 * 4) / (x.reviews + 4);
+      groups.sort((a, b) => bayes(b) - bayes(a));
+      if (groups[0]){ g = gmin(groups[0]); LS.set('sotd:' + mm + dd, g); }
+    } catch {}
+  }
+  if (!g) return;
+  sotd = g; fillSotd();
+}
+function sotdHTML(){
+  if (!sotd) return '';
+  const ago = new Date().getFullYear() - +sotd.date.slice(0, 4);
+  return `<div class="sotd"><p class="k">Show of the day</p><h3>${esc(fmt(sotd.date, { month: 'long', day: 'numeric', year: 'numeric' }))}</h3>
+    <p>${ago} years ago today, ${esc(sotd.venue)}${sotd.coverage ? ', ' + esc(sotd.coverage) : ''}</p>
+    <div class="row"><button class="btn primary" data-sotd="play">Play</button><button class="btn" data-sotd="open">Open</button></div></div>`;
+}
+function fillSotd(){
+  const m = $('#sotdMobile'); if (m) m.innerHTML = state.current ? '' : sotdHTML();
+  const d = $('#sotdDesk'); if (d) d.innerHTML = sotdHTML();
+}
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-sotd]'); if (!b || !sotd) return;
+  openShow(sotd, sotd.sources[0].identifier);
+  if (b.dataset.sotd === 'play'){
+    try { const m = await fetchMeta(sotd.sources[0].identifier); state.queue = { id: m.id, tracks: m.tracks, show: sotd, index: 0 }; loadTrack(0); } catch {}
+  }
+});
+
 /* ---------- detail ---------- */
 function openShow(g, sourceId, auto = false){
-  state.current = g; state.tab = 'setlist'; state.allReviews = false; state.recOpen = false;
+  state.current = g; if ($('#sotdMobile')) $('#sotdMobile').innerHTML = ''; state.tab = 'setlist'; state.allReviews = false; state.recOpen = false;
   if (auto){ document.querySelectorAll('.show').forEach(b => b.setAttribute('aria-current', b.dataset.date === g.date)); loadSource(sourceId || g.sources[0].identifier); return; }
   if (mq.matches && !document.body.classList.contains('viewing')){ listScroll = window.scrollY; history.pushState({ tr: 'show' }, ''); nav.show = true; }
   document.body.classList.add('viewing');
@@ -950,7 +1246,7 @@ async function loadSource(id){
 function renderDetail(){
   const el = $('#detail');
   const g = state.current;
-  if (!g){ el.innerHTML = `<div class="pick"><h2>Pick a show</h2><ol><li>Choose a year on the dial, or search for a song.</li><li>Select a show from the list.</li><li>Press play.</li></ol></div>`; return; }
+  if (!g){ el.innerHTML = `<div id="sotdDesk">${sotdHTML()}</div><div class="pick"><h2>Pick a show</h2><ol><li>Choose a year on the dial, or search for a song.</li><li>Select a show from the list.</li><li>Press play.</li></ol></div>`; return; }
   const m = state.meta;
   const src = g.sources.find(s => s.identifier === state.sourceId) || g.sources[0];
   const plural = (n, w) => `${n.toLocaleString()} ${w}${n === 1 ? '' : 's'}`;
@@ -979,6 +1275,7 @@ function renderDetail(){
       ${matchI >= 0 ? `<button class="btn primary" id="playMatch">Play ${esc(m.tracks[matchI].title.replace(/\s*-*>\s*$/, ''))}</button>` : ''}
       <button class="btn${matchI >= 0 ? '' : ' primary'}" id="playShow" ${m && m.tracks.length ? '' : 'disabled'}>${playingThis ? 'Restart show' : 'Play show'}</button>
       ${src.reviews ? `<span class="rating">${starHTML(src.rating)}<span class="rnum">${src.rating.toFixed(1)}</span><span class="muted">${src.reviews} review${src.reviews === 1 ? '' : 's'} of this tape</span></span>` : '<span class="muted">No reviews of this tape yet</span>'}
+      <button class="btn heartbtn" id="favShow" aria-pressed="${isFavShow(g.date)}"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span>${isFavShow(g.date) ? 'Saved' : 'Save show'}</span></button>
       <a class="link" href="https://archive.org/details/${encodeURIComponent(state.sourceId)}" target="_blank" rel="noopener">Open on archive.org</a>
     </div>
     <details class="recs" id="recs"${state.recOpen ? ' open' : ''}>
@@ -1003,6 +1300,35 @@ function renderDetail(){
     if (playingThis && state.queue.index === i) togglePlay(); else playFrom(i);
   });
   const more = $('#moreRev'); if (more) more.onclick = () => { state.allReviews = true; renderDetail(); };
+  $('#favShow').onclick = () => { toggleFavShow(g); haptic(); renderDetail(); };
+  el.querySelectorAll('.heart').forEach(b => b.onclick = e => { e.stopPropagation(); if (m){ toggleFavSong(g, m, +b.dataset.fi); haptic(); b.setAttribute('aria-pressed', isFavSong(m.id, +b.dataset.fi)); } });
+}
+// Read set breaks and segues: "->" at the end of a title, and Set 1 / Set 2 / Encore headings in the notes
+function prepTracks(m){
+  if (m.prepped) return; m.prepped = true;
+  m.tracks.forEach(t => {
+    if (/\s*(-+>|>|\u2192)\s*$/.test(t.title)){ t.segue = true; t.title = t.title.replace(/\s*(-+>|>|\u2192)\s*$/, ''); }
+    t.set = null;
+  });
+  const text = m.notes || ''; if (!text) return;
+  const nameOf = w => /enc/i.test(w) ? 'Encore' : /(3|three|iii)/i.test(w) ? 'Set 3' : /(2|two|ii)/i.test(w) ? 'Set 2' : 'Set 1';
+  let label = null, ptr = 0, found = 0;
+  const take = str => str.split(/,|->|>|\u2192|;|\//).map(x => norm(x.replace(/^\s*(d\d+)?t?\d+[.):\-\s]+/i, ''))).filter(x => x.length > 2).forEach(nm => {
+    for (let k = ptr; k < m.tracks.length; k++){
+      const tn = norm(m.tracks[k].title);
+      if (tn && (tn.includes(nm) || nm.includes(tn))){ m.tracks[k].set = label; ptr = k + 1; found++; break; }
+    }
+  });
+  for (const raw of text.split(/\n+/)){
+    const line = raw.trim(); if (!line) continue;
+    const h = line.match(/^(set\s*(?:one|two|three|[1-3]|i{1,3})\b|encore|e:)[:.\-\s]*/i);
+    if (h){ label = nameOf(h[1]); const rest = line.slice(h[0].length); if (rest) take(rest); continue; }
+    if (label) take(line);
+  }
+  if (!found) { m.tracks.forEach(t => t.set = null); return; }
+  let cur = null; const first = (m.tracks.find(t => t.set) || {}).set;
+  m.tracks.forEach(t => { if (t.set) cur = t.set; else t.set = cur || first; });
+  if (new Set(m.tracks.map(t => t.set)).size < 2) m.tracks.forEach(t => t.set = null);
 }
 function matchIndex(m){
   const q = norm(state.song); if (!q) return -1;
@@ -1013,12 +1339,15 @@ function tabBody(m, playingThis){
     if (!m.tracks.length) return '<p class="msg">This recording has no streamable audio. Choose another recording above.</p>';
     const total = m.tracks.reduce((a, t) => a + t.len, 0);
     const paused = audio.paused ? ' paused' : '';
+    prepTracks(m);
     const mi = state.song ? matchIndex(m) : -1;
     return `<ol class="tracks">${m.tracks.map((t, i) => {
       const on = playingThis && state.queue.index === i;
-      return `<li><button class="trk${on ? ' playing' + paused : ''}${i === mi ? ' match' : ''}" data-i="${i}" aria-label="Play ${esc(t.title)}">
+      const head = t.set && (i === 0 || m.tracks[i - 1].set !== t.set) ? `<li class="set-h">${t.set}</li>` : '';
+      const suite = i > 0 && m.tracks[i - 1].segue;
+      return `${head}<li><button class="trk${on ? ' playing' + paused : ''}${i === mi ? ' match' : ''}${suite ? ' suite' : ''}" data-i="${i}" aria-label="Play ${esc(t.title)}">
         <span class="n">${on ? '<span class="eqbars" aria-hidden="true"><i></i><i></i><i></i></span>' : i + 1}</span>
-        <span class="t">${esc(t.title)}${i === mi ? '<span class="yours">Your song</span>' : ''}</span><span class="len">${t.len ? clock(t.len) : ''}</span></button></li>`;
+        <span class="t">${esc(t.title)}${t.segue ? '<span class="seg-arrow" aria-label="segues into the next song">→</span>' : ''}${i === mi ? '<span class="yours">Your song</span>' : ''}</span><span class="len">${t.len ? clock(t.len) : ''}</span></button><button class="heart" data-fi="${i}" aria-pressed="${isFavSong(m.id, i)}" aria-label="Save this version of ${esc(t.title)}"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></button></li>`;
     }).join('')}</ol>${total ? `<p class="total">${m.tracks.length} tracks, ${clock(total)} total</p>` : ''}<label class="chk auto"><input type="checkbox" id="autoNext"${store.get('autonext', true) ? ' checked' : ''}> ${state.song ? 'After a version ends, play the next show\'s version' : 'When a show ends, start the next one in the list'}</label>`;
   }
   if (state.tab === 'notes'){
@@ -1031,13 +1360,83 @@ function tabBody(m, playingThis){
       ${rows ? `<dl class="recinfo">${rows}</dl>` : ''}`;
   }
   if (!m.reviews.length) return '<p style="color:var(--muted)">No one has reviewed this recording yet.</p>';
-  const list = state.allReviews ? m.reviews : m.reviews.slice(0, 5);
-  return list.map(r => `<article class="review">
+  prepTracks(m);
+  const useful = r => (+r.stars || 0) * 2 + Math.min(String(r.reviewbody || '').length, 1500) / 300;
+  const ranked = m.reviews.slice().sort((a, b) => useful(b) - useful(a));
+  const names = [...new Set(m.tracks.map(t => t.title))].filter(n => norm(n).length > 3);
+  const hls = [];
+  for (const r of ranked){
+    const sents = htmlToText(r.reviewbody).replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/);
+    for (const sn of sents){
+      if (sn.length < 25 || sn.length > 220) continue;
+      const hit = names.find(n => norm(sn).includes(norm(n)));
+      if (hit){ hls.push({ sn, hit, who: r.reviewer || 'A listener' }); break; }
+    }
+    if (hls.length >= 4) break;
+  }
+  const bold = (sn, hit) => { const i = sn.toLowerCase().indexOf(hit.toLowerCase()); return i < 0 ? esc(sn) : esc(sn.slice(0, i)) + '<b>' + esc(sn.slice(i, i + hit.length)) + '</b>' + esc(sn.slice(i + hit.length)); };
+  const hlHTML = hls.length ? `<p class="rev-k">Highlights</p>${hls.map(h => `<div class="hl"><p>${bold(h.sn, h.hit)}</p><small>${esc(h.who)}</small></div>`).join('')}<p class="rev-k" style="margin-top:22px">Most helpful first</p>` : '';
+  const list = state.allReviews ? ranked : ranked.slice(0, 5);
+  return hlHTML + list.map(r => `<article class="review">
       ${starHTML(+r.stars || 0)}
       <h4>${esc(r.reviewtitle || 'Untitled review')}</h4>
       <p>${esc(htmlToText(r.reviewbody))}</p>
       <small>${esc(r.reviewer || 'Anonymous')}${r.reviewdate ? ', ' + esc(String(r.reviewdate).slice(0, 10)) : ''}</small>
     </article>`).join('') + (!state.allReviews && m.reviews.length > 5 ? `<p><button class="btn" id="moreRev">Show all ${m.reviews.length} reviews</button></p>` : '');
+}
+
+// The whole show as a strip of segments, one per song, with a gap at each set break. Tap a segment to jump there.
+function renderTimeline(){
+  const q = state.queue; const els = [$('#timeline'), $('#timelineD')];
+  if (!q){ els.forEach(e => e && (e.innerHTML = '')); return; }
+  const m = metaCache.get(q.id); if (m) prepTracks(m);
+  const html = q.tracks.map((t, i) => `<i data-ti="${i}" class="${i < q.index ? 'done' : i === q.index ? 'cur' : ''}${i > 0 && t.set && q.tracks[i - 1].set !== t.set ? ' gap' : ''}" style="flex:${Math.max(30, t.len || 300)}" title="${esc(t.title)}">${i === q.index ? '<b></b>' : ''}</i>`).join('');
+  els.forEach(e => { if (e) e.innerHTML = html; });
+}
+['#timeline', '#timelineD'].forEach(sel => $(sel).addEventListener('click', e => { const i = e.target.closest('[data-ti]'); if (i){ loadTrack(+i.dataset.ti); haptic(); } }));
+// Desktop: hand off to the preloaded next song a hair before this one ends, for gapless segues
+function gaplessWatch(){
+  requestAnimationFrame(gaplessWatch);
+  const q = state.queue; if (!q || audio.paused || !spare || q.songRun || q.preview || state.remote) return;
+  const n = q.tracks[q.index + 1]; if (!n || spare.url !== n.url) return;
+  const left = audio.duration - audio.currentTime;
+  if (isFinite(left) && left <= .045 && spare.el.readyState >= 3) loadTrack(q.index + 1);
+}
+setTimeout(() => { if (!IOS) requestAnimationFrame(gaplessWatch); }, 0);
+async function restoreSession(){
+  const r = store.get('resume', null); if (!r || !r.g || state.queue) return;
+  try {
+    const m = await fetchMeta(r.id); if (state.queue) return;
+    const i = Math.min(r.index || 0, m.tracks.length - 1);
+    state.queue = { id: m.id, tracks: m.tracks, show: r.g, index: i, histFor: r.g.date };
+    audio.preload = 'metadata'; audio.src = m.tracks[i].url;
+    if (r.t > 1) audio.addEventListener('loadedmetadata', () => { try { audio.currentTime = r.t; } catch {} }, { once: true });
+    ['#play', '#mplay', '#seek', '#shPlay', '#shSeek', '#back15', '#fwd15'].forEach(s => $(s).disabled = false);
+    updateNowPlaying(); renderTimeline();
+    $('#npSub').textContent = `Paused at ${clock(r.t)}. Press play to pick up where you left off.`;
+  } catch {}
+}
+// Light tap feedback: vibration on Android; iPhone gets a tick from a hidden switch control
+const hapticEl = (() => { const l = document.createElement('label'); l.style.display = 'none'; const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); l.appendChild(i); document.body.appendChild(l); return l; })();
+function haptic(){ try { if (navigator.vibrate) navigator.vibrate(8); else if (IOS) hapticEl.click(); } catch {} }
+
+/* ---------- favorites and history (kept on this device) ---------- */
+const gmin = g => ({ date: g.date, venue: g.venue, coverage: g.coverage, rating: g.rating, reviews: g.reviews, hasSbd: g.hasSbd, downloads: g.downloads,
+  sources: g.sources.map(x => ({ identifier: x.identifier, kind: x.kind, rating: x.rating, reviews: x.reviews, dl: x.dl, source: one(x.source) })) });
+const favs = () => store.get('favs', { shows: {}, songs: [] });
+const isFavShow = d => !!favs().shows[d];
+const isFavSong = (id, i) => favs().songs.some(f => f.id === id && f.index === i);
+function toggleFavShow(g){ const f = favs(); if (f.shows[g.date]) delete f.shows[g.date]; else f.shows[g.date] = { ...gmin(g), at: Date.now() }; store.set('favs', f); }
+function toggleFavSong(g, m, i){
+  const f = favs(), k = f.songs.findIndex(x => x.id === m.id && x.index === i);
+  if (k >= 0) f.songs.splice(k, 1); else f.songs.unshift({ id: m.id, index: i, title: m.tracks[i].title, g: gmin(g), at: Date.now() });
+  store.set('favs', f);
+  if (k < 0) toast('Saved to your Library');
+}
+function addHistory(q){
+  const h = store.get('history', []).filter(x => x.date !== q.show.date);
+  h.unshift({ ...gmin(q.show), id: q.id, at: Date.now() });
+  store.set('history', h.slice(0, 40));
 }
 
 /* ---------- random ---------- */
@@ -1087,6 +1486,14 @@ function createAudio(cors){
   a.addEventListener('playing', () => { $('#player').classList.remove('loading'); errCount = 0; syncPlay(); });
   a.addEventListener('ended', () => { if (a === audio) onEnded(); });
   a.addEventListener('error', onAudioError);
+  if (window.WebKitPlaybackTargetAvailabilityEvent){
+    a.addEventListener('webkitplaybacktargetavailabilitychanged', e => setCastAvail(e.availability === 'available'));
+    a.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', () => setRemote(a.webkitCurrentPlaybackTargetIsWireless));
+  } else if (a.remote && a.remote.watchAvailability){
+    a.remote.watchAvailability(v => setCastAvail(v)).catch(() => setCastAvail(true));
+    a.remote.addEventListener('connect', () => setRemote(true));
+    a.remote.addEventListener('disconnect', () => setRemote(false));
+  }
   return a;
 }
 audio = createAudio(true);
@@ -1094,9 +1501,29 @@ audio = createAudio(true);
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const eqActive = () => eq.on && eq.gains.some(g => Math.abs(g) > .01);
 // iOS pauses processed audio when the screen locks, so on iPhone the music only goes through the EQ while it's in use
-const wantRouted = () => corsMode && eqAvailable && !state.car && (!IOS || eqActive() || tripIsOpen());
-let pendingSwap = false;
+const wantRouted = () => corsMode && eqAvailable && !state.car && !state.remote && (!IOS || eqActive() || tripIsOpen());
+document.addEventListener('visibilitychange', () => { if (!document.hidden && ctx && ctx.state !== 'running') ctx.resume(); });
+let pendingSwap = false, outEl = null;
 function tripIsOpen(){ try { return trip.open; } catch { return false; } }
+// Speakers and TVs: AirPlay in Safari, Cast in Chrome. The sound goes straight to the device, so the EQ and visuals rest meanwhile.
+let castAvail = false;
+function setCastAvail(v){ castAvail = castAvail || v; ['#castBtn', '#shCast'].forEach(s => { const b = $(s); if (b) b.hidden = !castAvail; }); }
+function setRemote(on){
+  if (!!state.remote === !!on) return;
+  state.remote = on;
+  $('#castBtn').classList.toggle('on', !!on);
+  toast(on ? 'Playing on your speaker. The EQ and Trip out visuals rest while connected.' : 'Back to this device');
+  if (!on && state.queue) ensureGraph();
+}
+function openSpeakers(){
+  if (!state.queue && !audio.getAttribute('src')){ toast('Start a show first, then pick a speaker.'); return; }
+  if (audio.routed) swapAudio(false);   // devices need the original stream, not the processed one
+  try {
+    if (audio.webkitShowPlaybackTargetPicker) audio.webkitShowPlaybackTargetPicker();
+    else if (audio.remote) audio.remote.prompt().catch(err => { if (err && err.name !== 'NotAllowedError') toast('No speakers or TVs found on your network.'); });
+    else toast('This browser can’t send audio to other devices. Safari (AirPlay) and Chrome (Cast) can.');
+  } catch { toast('No speakers or TVs found on your network.'); }
+}
 function ensureCtx(){
   if (graph) return true;
   try {
@@ -1105,7 +1532,15 @@ function ensureCtx(){
     const pre = ctx.createGain();
     const an = ctx.createAnalyser(); an.fftSize = 2048; an.smoothingTimeConstant = 0.82;
     for (let i = 0; i < filters.length - 1; i++) filters[i].connect(filters[i + 1]);
-    filters[filters.length - 1].connect(pre); pre.connect(an); an.connect(ctx.destination);
+    filters[filters.length - 1].connect(pre); pre.connect(an);
+    // On iPhone, send the processed sound out through a regular audio player. iOS treats that as music playback,
+    // which is allowed to keep going with the screen locked, instead of pausing the page's audio engine.
+    if (IOS && ctx.createMediaStreamDestination){
+      const dest = ctx.createMediaStreamDestination(); an.connect(dest);
+      outEl = document.createElement('audio'); outEl.setAttribute('playsinline', ''); outEl.srcObject = dest.stream;
+      outEl.play().catch(() => {});
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
+    } else an.connect(ctx.destination);
     graph = { filters, pre, an, input: filters[0] };
     applyEq();
     return true;
@@ -1180,7 +1615,7 @@ function playFrom(i, songRun = false){
 // The next track loads quietly in a spare player, then takes over the moment the current one ends.
 let spare = null;
 function bufferNext(){
-  const q = state.queue; if (!q || IOS) return;
+  const q = state.queue; if (!q || IOS || state.remote) return;
   const n = q.songRun ? null : q.tracks[q.index + 1];
   if (!n){ if (spare){ spare.el.removeAttribute('src'); spare = null; } return; }
   if (spare && spare.url === n.url) return;
@@ -1200,7 +1635,7 @@ function loadTrack(i){
   q.index = i;
   ensureGraph();
   const url = q.tracks[i].url;
-  if (!IOS && spare && spare.url === url && (spare.el.crossOrigin === 'anonymous') === wantRouted()){
+  if (!IOS && !state.remote && spare && spare.url === url && (spare.el.crossOrigin === 'anonymous') === wantRouted()){
     const old = audio; audio = spare.el; spare = null;
     audio.volume = volume;
     if (wantRouted()) routeElement(audio);
@@ -1210,7 +1645,11 @@ function loadTrack(i){
   else { try { audio.currentTime = 0; } catch {} }
   audio.play().catch(() => {});
   q.buffered = false;
-  ['#play', '#mplay', '#seek', '#shPlay', '#shSeek'].forEach(s => $(s).disabled = false);
+  if (!q.preview){ if (q.histFor !== q.show.date){ q.histFor = q.show.date; addHistory(q); } }
+  if (!q.preview) store.set('resume', { g: gmin(q.show), id: q.id, index: i, t: 0 });
+  if (i > 0 && q.tracks[i - 1].segue && tripIsOpen()) segueShift();
+  ['#play', '#mplay', '#seek', '#shPlay', '#shSeek', '#back15', '#fwd15'].forEach(s => $(s).disabled = false);
+  renderTimeline();
   updateNowPlaying();
   if (state.meta && state.meta.id === q.id && state.tab === 'setlist') renderDetail();
 }
@@ -1219,6 +1658,7 @@ function togglePlay(){
   ensureGraph();
   if (audio.paused) audio.play().catch(() => {}); else audio.pause();
 }
+function skip(sec){ if (!state.queue) return; audio.currentTime = Math.max(0, Math.min((audio.duration || 0) - .5, audio.currentTime + sec)); haptic(); }
 function next(){ const q = state.queue; if (q && q.index < q.tracks.length - 1) loadTrack(q.index + 1); }
 function prev(){ const q = state.queue; if (!q) return; if (audio.currentTime > 4 || q.index === 0) audio.currentTime = 0; else loadTrack(q.index - 1); }
 
@@ -1251,6 +1691,7 @@ const PLAY = '<path d="M8 5v14l11-7z"/>', PAUSE = '<path d="M6 5h4v14H6zm8 0h4v1
 function syncPlay(){
   const p = !audio.paused;
   document.body.classList.toggle('playing', p);
+  if (outEl){ if (p && audio.routed) outEl.play().catch(() => {}); else if (!p) outEl.pause(); }
   $('#playIcon').innerHTML = $('#mplayIcon').innerHTML = $('#shPlayIcon').innerHTML = $('#carPlayIcon').innerHTML = p ? PAUSE : PLAY;
   $('#carPlay').setAttribute('aria-label', p ? 'Pause' : 'Play');
   $('#shPlay').setAttribute('aria-label', p ? 'Pause' : 'Play');
@@ -1284,6 +1725,11 @@ let posT = 0;
 function onTime(){
   const q = state.queue;
   if (q && !q.buffered && audio.currentTime > 4){ q.buffered = true; bufferNext(); }
+  if (q){
+    const segs = document.querySelectorAll('.timeline i.cur b'), d2 = isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+    segs.forEach(b => b.style.width = (d2 ? Math.min(100, audio.currentTime / d2 * 100) : 0) + '%');
+    if (performance.now() - (q.savedAt || 0) > 5000){ q.savedAt = performance.now(); store.set('resume', { g: gmin(q.show), id: q.id, index: q.index, t: audio.currentTime }); }
+  }
   if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && isFinite(audio.duration) && audio.duration > 0 && performance.now() - posT > 1000){
     posT = performance.now();
     try { navigator.mediaSession.setPositionState({ duration: audio.duration, playbackRate: 1, position: Math.min(audio.currentTime, audio.duration) }); } catch {}
@@ -1317,7 +1763,12 @@ function updateNowPlaying(){
   syncTrip();
   document.title = `${t.title} — ${fmtShort(g.date)} ${g.date.slice(0, 4)} | deadjams`;
   if ('mediaSession' in navigator){
-    navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: 'Grateful Dead', album: `${fmtShort(g.date)} ${g.date.slice(0, 4)}, ${g.venue}`, artwork: [{ src: coverArt(g), sizes: '512x512', type: 'image/png' }] });
+    const nx = q.tracks[q.index + 1];
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: `${q.index + 1}. ${t.title}`,
+      artist: `Grateful Dead, ${fmtShort(g.date)} ${g.date.slice(0, 4)}`,
+      album: nx ? `Next: ${q.index + 2}. ${nx.title}` : `Last song of ${g.venue}`,
+      artwork: [{ src: coverArt(g), sizes: '512x512', type: 'image/png' }] });
   }
 }
 if ('mediaSession' in navigator){
@@ -1330,7 +1781,9 @@ if ('mediaSession' in navigator){
 }
 
 /* player controls */
-$('#play').onclick = togglePlay;
+$('#play').onclick = () => { togglePlay(); haptic(); };
+$('#back15').onclick = () => skip(-15); $('#fwd15').onclick = () => skip(15);
+$('#shBack15').onclick = () => skip(-15); $('#shFwd15').onclick = () => skip(15);
 $('#mplay').onclick = togglePlay;
 $('#next').onclick = next;
 $('#prev').onclick = prev;
@@ -1347,13 +1800,28 @@ function setVol(v){ volume = v; audio.volume = v; vol.value = v * 100; vol.style
 vol.addEventListener('input', () => { setVol(vol.value / 100); if (volume > 0) lastVol = volume; });
 $('#mute').onclick = () => setVol(volume > 0 ? 0 : lastVol || 0.9);
 setVol(volume);
+$('#castBtn').onclick = openSpeakers;
+$('#shCast').onclick = openSpeakers;
 $('#np').onclick = () => { if (!state.queue) return; if (mq.matches) openSheet(); else goToPlayingShow(); };
 function goToPlayingShow(){
   const q = state.queue; if (!q) return;
   if (state.current === q.show && state.sourceId === q.id && document.body.classList.contains('viewing')) return;
   openShow(q.show, q.id);
 }
-$('#mnext').onclick = next;
+$('#mnext').onclick = () => { next(); haptic(); };
+(() => { // swipe up on the mini player opens the now-playing screen
+  let y0 = null;
+  $('#player').addEventListener('touchstart', e => { y0 = e.touches[0].clientY; }, { passive: true });
+  $('#player').addEventListener('touchend', e => { if (y0 != null && y0 - e.changedTouches[0].clientY > 40 && state.queue && mq.matches){ openSheet(); haptic(); } y0 = null; }, { passive: true });
+  // swipe sideways on the song title in the now-playing screen to change songs
+  let x0 = null, sy = null;
+  const t = $('#shTrack').parentElement;
+  t.addEventListener('touchstart', e => { if (e.target.closest('input, button')) return; x0 = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  t.addEventListener('touchend', e => {
+    if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - sy; x0 = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5){ dx < 0 ? next() : prev(); haptic(); }
+  }, { passive: true });
+})();
 
 /* EQ UI */
 function buildEq(){
@@ -1380,7 +1848,8 @@ function buildEq(){
   $('#eqClose').onclick = () => toggleEq(false);
   renderEqNote();
 }
-function saveEq(){ store.set('eq', eq); applyEq(); if (state.queue) ensureGraph(); $('#eqBtn').classList.toggle('on', eq.on && eq.gains.some(g => g !== 0)); }
+function saveEq(){ store.set('eq', eq); applyEq(); if (state.queue) ensureGraph();
+  const lbl = !eq.on ? 'Off' : eq.gains.every(g => !g) ? 'Flat' : eq.preset; $('#eqLabel').textContent = lbl; if ($('#setEqVal')) $('#setEqVal').textContent = lbl; $('#eqBtn').classList.toggle('on', eq.on && eq.gains.some(g => g !== 0)); }
 function toggleEq(force){
   const panel = $('#eq'); const show = force ?? panel.hidden;
   panel.hidden = !show; $('#eqBtn').setAttribute('aria-expanded', show);
@@ -1389,7 +1858,7 @@ function toggleEq(force){
 function renderEqNote(){
   if (typeof syncTrip === 'function') syncTrip();
   $('#eqNote').textContent = eqAvailable
-    ? (IOS ? 'On iPhone, music with the equalizer on pauses when the screen locks. Flat keeps it playing.' : 'Drag a band to shape the sound. Settings are saved on this device.')
+    ? 'Drag a band to shape the sound. Settings are saved on this device.'
     : "This browser won't let the page process archive.org audio, so the equalizer is off. Playback still works.";
   document.querySelectorAll('.band input, #eqOn, .chip').forEach(i => i.disabled = !eqAvailable);
 }
@@ -1442,7 +1911,7 @@ $('#random').onclick = () => randomShow(false);
 document.addEventListener('keydown', e => {
   if (e.target.closest('input, select, textarea') && e.target.type !== 'range') return;
   if (e.key === ' ' && !e.target.closest('button')){ e.preventDefault(); togglePlay(); }
-  else if (e.key === 'Escape'){ if (trip.open) requestCloseTrip(); else if (!$('#eq').hidden) toggleEq(false); else if (!$('#sheet').hidden) closeSheet(); }
+  else if (e.key === 'Escape'){ if (!$('#settings').hidden) closeSettings(); else if (trip.open) requestCloseTrip(); else if (!$('#eq').hidden) toggleEq(false); else if (!$('#sheet').hidden) closeSheet(); }
   else if (e.target.closest('.dial, input[type=range]')) return;
   else if (e.key === 'ArrowRight' && state.queue && !e.shiftKey) audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
   else if (e.key === 'ArrowLeft' && state.queue && !e.shiftKey) audio.currentTime = Math.max(0, audio.currentTime - 10);
@@ -1473,6 +1942,7 @@ function hideSheet(){
 function closeSheet(){ if (nav.sheet) history.back(); else hideSheet(); }
 window.addEventListener('popstate', () => {
   if (nav.skipPop){ nav.skipPop = false; return; }
+  if (nav.settings){ nav.settings = false; hideSettings(); return; }
   if (nav.trip){ nav.trip = false; closeTrip(); return; }
   if (nav.car){ nav.car = false; hideCar(); return; }
   if (nav.sheet){ hideSheet(); return; }
@@ -1494,7 +1964,7 @@ $('#shShow').onclick = () => { nav.thenShow = true; closeSheet(); };
   });
 })();
 document.addEventListener('click', e => { // tap outside the EQ to close it
-  if ($('#eq').hidden || e.target.closest('#eq, #eqBtn, #sheetEq')) return;
+  if ($('#eq').hidden || e.target.closest('#eq, #eqBtn, #sheetEq, #shEq, #setEq')) return;
   toggleEq(false);
 });
 
@@ -1527,6 +1997,7 @@ function readLevels(dt){
     L.favg = (L.favg || .05) * .97 + fl * .03;
     if (fl > L.favg * 1.55 + .012 && t - (L.lastHit || 0) > .09){
       L.hit = 1; L.lastHit = t;
+      if (Math.random() < .55) spawnShape();
       L.hx = rand(-.55, .55); L.hy = rand(-.38, .38); L.hh = Math.random();
     }
   } else { b = .04; m = .04; h = .03; }
@@ -1538,11 +2009,19 @@ function readLevels(dt){
   trip.hue = (trip.hue || 0) + L.beat * dt * 60 * (trip.T ? trip.T.hueJump : 0);
 }
 
+const spawnU = new Float32Array(16), spawnCol = new Float32Array(12); let spawnI = 0;
+for (let i = 0; i < 4; i++) spawnU[i * 4 + 2] = 99;
+function spawnShape(){
+  if (!trip.T) return;
+  const j = spawnI; spawnI = (spawnI + 1) % 4;
+  spawnU.set([rand(-.6, .6), rand(-.4, .4), 0, Math.floor(Math.random() * 4)], j * 4);
+  spawnCol.set(paletteAt((trip.P.palette + .2 + Math.random() * .6) % 1)[Math.floor(Math.random() * 4)], j * 3);
+}
 const DF_PALETTES = [
   ['#ff4fd8', '#8a5cff', '#3b6bff', '#ffa3e8'], ['#00e5ff', '#1a6bff', '#0fd1a0', '#8cf6ff'], ['#39ff9c', '#00c2ff', '#b066ff', '#d8ff6b'],
   ['#ffc857', '#ff7a59', '#e8506e', '#ffe3a3'], ['#ff3b30', '#ff9500', '#ffd60a', '#b0306a'], ['#ff5c9a', '#ffa54f', '#5cf2a0', '#8d7bff'],
-  ['#3fae6a', '#a6d93b', '#e3c26a', '#5f9c8c'], ['#e8f6ff', '#9fd3ff', '#5a8dff', '#c8b6ff'], ['#e07a2e', '#22b8ad', '#f4b06a', '#3f8fa0'],
-  ['#c6ff00', '#00ff95', '#ff00c8', '#00b3ff'], ['#fff1c1', '#e0a83c', '#b0762c', '#ffd27a'], ['#ff6b6b', '#feca57', '#7a4cff', '#ff9ff3'],
+  ['#3fae6a', '#a6d93b', '#e3c26a', '#5f9c8c'], ['#9ccfff', '#7fb6ff', '#5a8dff', '#a993ff'], ['#e07a2e', '#22b8ad', '#f4b06a', '#3f8fa0'],
+  ['#c6ff00', '#00ff95', '#ff00c8', '#00b3ff'], ['#ffc65c', '#e0a83c', '#b0762c', '#ff9f4a'], ['#ff6b6b', '#feca57', '#7a4cff', '#ff9ff3'],
   ['#d9203a', '#ff6a3d', '#7a2a9c', '#ff9a6b'],
 ].map(p => p.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255)));
 const smooth3 = x => x * x * (3 - 2 * x);
@@ -1574,6 +2053,60 @@ function derive(){
   c.speed = (.85 + .25 * t) * (1 - .35 * dd) * m(P.flow);
   c.ripple = Math.min(1.6, Math.max(0, Math.max(0, (dd - .12) / .88) * m(P.ripples) + (P.ripples - .5) * .5));
 }
+// As in Driftfield: render a tiny copy of the picture, read the colors behind each button, and ease toward them
+const TW = 32, TH = 18, tinyBuf = new Uint8Array(TW * TH * 4);
+let tiny = null, sampT = 0;
+const tintC = { x: null, d: null };
+function vivid(c, fb){
+  const mx = Math.max(c[0], c[1], c[2]), w = clamp01(mx * 5);
+  const nrm = mx > .004 ? c.map(v => v / mx) : [1, 1, 1];
+  const l = nrm[0] * .3 + nrm[1] * .59 + nrm[2] * .11;
+  const sat = nrm.map(v => clamp01(l + (v - l) * 1.7));
+  const mixd = sat.map((v, i) => w * v + (1 - w) * fb[i]);
+  const top = Math.max(...mixd) || 1;
+  return mixd.map(v => clamp01(v / top * .95));
+}
+const lighten = c => c.map(v => v + (1 - v) * .42);
+const rgbStr = c => c.map(v => Math.round(v * 255)).join(',');
+function paletteBright(){
+  const pal = trip.cur.pal, top = pal.reduce((a, c) => (c[0] + c[1] + c[2] > a[0] + a[1] + a[2] ? c : a));
+  const mx = Math.max(...top) || 1; return top.map(v => v / mx * .95);
+}
+function sampleBehind(now){
+  if (now - sampT < 220) return;
+  sampT = now;
+  if (!tiny){
+    const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+    [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, TW, TH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    tiny = { fb };
+  }
+  // the display program and its settings are still active from this frame, so draw it again, small
+  gl.bindFramebuffer(gl.FRAMEBUFFER, tiny.fb); gl.viewport(0, 0, TW, TH);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.readPixels(0, 0, TW, TH, gl.RGBA, gl.UNSIGNED_BYTE, tinyBuf);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  const box = $('#tripBox').getBoundingClientRect(), fb = paletteBright();
+  const region = el => {
+    const r = el.getBoundingClientRect();
+    const x0 = Math.max(0, Math.floor((r.left - box.left) / box.width * TW)), x1 = Math.min(TW, Math.max(x0 + 1, Math.ceil((r.right - box.left) / box.width * TW)));
+    const y0 = Math.max(0, Math.floor((r.top - box.top) / box.height * TH)), y1 = Math.min(TH, Math.max(y0 + 1, Math.ceil((r.bottom - box.top) / box.height * TH)));
+    let cr = 0, cg = 0, cb = 0, n = 0;
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++){
+      const o = ((TH - 1 - y) * TW + x) * 4;   // the pixels come back bottom row first
+      cr += tinyBuf[o]; cg += tinyBuf[o + 1]; cb += tinyBuf[o + 2]; n++;
+    }
+    return n ? [cr / n / 255, cg / n / 255, cb / n / 255] : null;
+  };
+  [['x', $('#tripX')], ['d', $('#bDice')]].forEach(([k, el]) => {
+    const raw = region(el), target = raw ? vivid(raw, fb) : fb;
+    tintC[k] = tintC[k] ? tintC[k].map((v, i) => v + (target[i] - v) * .14) : target;
+    const pre = k === 'x' ? '--cx' : '--cd';
+    el.style.setProperty(pre, rgbStr(tintC[k])); el.style.setProperty(pre + 'l', rgbStr(lighten(tintC[k])));
+  });
+}
 function tintFromPalette(){
   const pal = trip.cur.pal, top = pal.reduce((a, c) => (c[0] + c[1] + c[2] > a[0] + a[1] + a[2] ? c : a));
   const mx = Math.max(...top) || 1, base = top.map(v => v / mx * .95), light = base.map(v => v + (1 - v) * .42);
@@ -1593,6 +2126,7 @@ vec3 pal(float x){x=fract(x+uHue)*4.;float i=floor(x),f=smoothstep(0.,1.,fract(x
   vec3 a=i<1.?uP0:i<2.?uP1:i<3.?uP2:uP3;vec3 c=i<1.?uP1:i<2.?uP2:i<3.?uP3:uP0;return mix(a,c,f);}
 float luma(vec3 c){return dot(c,vec3(.299,.587,.114));}`;
 const SIM_FS = `uniform sampler2D uPrev;uniform vec2 uTexel;
+uniform vec4 uSpawn[4];uniform vec3 uSpawnCol[4];
 uniform float uMorph,uGlow,uDensity,uChaos,uDecay,uFloor,uStep,uInk,uPull,uSpin,uStars,uBeat,uBeatR,uRing,uHit,uSplash,uSplashSize,uHitHue;uniform vec2 uHitPos;
 void main(){
   vec2 uv=v;vec2 as=vec2(uAspect,1.);vec2 p=(uv-.5)*as;float t=uTime;
@@ -1619,12 +2153,22 @@ void main(){
   // each beat sends a ring of light outward from the middle
   col+=pal(t*.05+r*.8)*exp(-pow((r-uBeatR)*16.,2.))*uBeat*.07*uRing;
   // every transient splashes fresh color somewhere new
-  vec2 hd=p-uHitPos;col+=pal(uHitHue)*exp(-dot(hd,hd)*uSplashSize)*uHit*.09*uSplash;
+  vec2 hd=p-uHitPos;col+=pal(uHitHue)*exp(-dot(hd,hd)*uSplashSize)*uHit*.06*uSplash;
+  // Driftfield's shapes: a bloom, a widening ring, a turning triangle, or a scatter of dots
+  for(int i=0;i<4;i++){vec4 sp=uSpawn[i];float age=sp.z;
+    if(age<3.){vec2 d=p-sp.xy;float fade=smoothstep(0.,.25,age)*(1.-smoothstep(1.,3.,age));float sh=0.;
+      if(sp.w<.5) sh=exp(-dot(d,d)*70.);
+      else if(sp.w<1.5){float rr=.03+age*.06;sh=exp(-pow((length(d)-rr)*110.,2.));}
+      else if(sp.w<2.5){float a=atan(d.y,d.x)+age*.8;float k=.5/cos(mod(a,2.0944)-1.0472);sh=exp(-pow((length(d)/(.06*k)-1.)*12.,2.))*exp(-dot(d,d)*22.);}
+      else {vec2 gg=d*45.;vec2 fr2=fract(gg)-.5;sh=step(.82,hash(floor(gg)+sp.xy*13.))*exp(-dot(fr2,fr2)*28.)*exp(-dot(d,d)*40.);}
+      col+=uSpawnCol[i]*sh*fade*.03*uStep;}}
   vec2 cell=floor(uv/uTexel*.5);float h=fract(sin(dot(cell*.0173+floor(t*2.)*.731,vec2(12.9898,78.233)))*43758.5453);
   col+=step(1.-.0012*(.3+uDensity),h)*(.05+.06*uGlow)*uStep*uStars*vec3(.9,.95,1.);
   gl_FragColor=vec4(min(col,vec3(4.)),1.);
 }`;
-const DISPLAY_FS = `uniform sampler2D uSim;uniform vec2 uTexel;uniform float uGlow,uRipple,uSat,uExpo,uKick,uPunch,uFlash,uSym,uMirror,uShock,uHit,uHitR;uniform vec3 uBack;uniform vec2 uHitPos;
+const DISPLAY_FS = `uniform sampler2D uImg;uniform float uImgAmt,uImgAsp;
+vec2 cover(vec2 uv,float ia){float s=uAspect/ia;vec2 c=uv-.5;if(s>1.)c.y/=s;else c.x*=s;return c+.5;}
+uniform sampler2D uSim;uniform vec2 uTexel;uniform float uGlow,uRipple,uSat,uExpo,uKick,uPunch,uFlash,uSym,uMirror,uShock,uHit,uHitR;uniform vec3 uBack;uniform vec2 uHitPos;
 void main(){
   vec2 uv=(v-.5)*(1.-uKick*uPunch)+.5;
   vec2 kp=(uv-.5)*vec2(uAspect,1.);
@@ -1642,10 +2186,19 @@ void main(){
   for(int i=0;i<12;i++){float a=float(i)*.5236+.26;float k=i<6?1.:2.3;b+=texture2D(uSim,uv+vec2(cos(a),sin(a))*uTexel*R*k).rgb;}
   b/=12.;
   vec3 col=base+b*uGlow*(1.1+uKick*1.2);
-  col=1.-exp(-col*uExpo);
+  // tone map on the brightest channel, so bright areas stay colorful instead of washing out to white
+  float mx=max(max(col.r,col.g),col.b)+1e-4;col*=(1.-exp(-mx*uExpo))/mx;
   col=max(mix(vec3(luma(col)),col,uSat),0.);
   col*=1.+(rdir.x+rdir.y)*uRipple*.05;
   vec2 p=(uv-.5)*vec2(uAspect,1.);
+  if(uImgAmt>.002){
+    vec2 iw=vec2(fbm(p*1.1+vec2(uTime*.02,0.)),fbm(p*1.1+vec2(4.,-uTime*.02)))-.5;
+    vec3 im=texture2D(uImg,cover(uv+iw*.035,uImgAsp)).rgb;float li=luma(im);
+    vec3 tint=mix(im,pal(li*1.2+uTime*.01)*(.2+1.1*li),.62);
+    float mk=smoothstep(.36,.68,fbm(p*1.5+iw*1.5+vec2(-uTime*.013,uTime*.009)));
+    float ia=clamp(mk*uImgAmt*(.4+.75*li)*(1.+.6*uKick),0.,.8);
+    col=mix(col,1.-(1.-col)*(1.-tint),ia);
+  }
   col+=uBack*(.7+.6*fbm(p*.9+vec2(uTime*.008,-uTime*.006)))*(1.-clamp(luma(col)*2.2,0.,1.));
   vec2 vu=uv-.5;col*=1.-dot(vu,vu);
   col*=1.+uKick*uFlash+uHit*uFlash*.4;
@@ -1663,7 +2216,7 @@ function glInit(){
     gl.bindAttribLocation(pr, 0, 'p'); gl.linkProgram(pr);
     if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
     const c = {}, L = n => (n in c) ? c[n] : (c[n] = gl.getUniformLocation(pr, n));
-    return { pr, f: (n, x) => gl.uniform1f(L(n), x), v2: (n, x, y) => gl.uniform2f(L(n), x, y), v3: (n, a) => gl.uniform3f(L(n), a[0], a[1], a[2]), i: (n, x) => gl.uniform1i(L(n), x) };
+    return { pr, v4a: (n, a) => gl.uniform4fv(L(n), a), v3a: (n, a) => gl.uniform3fv(L(n), a), f: (n, x) => gl.uniform1f(L(n), x), v2: (n, x, y) => gl.uniform2f(L(n), x, y), v3: (n, a) => gl.uniform3f(L(n), a[0], a[1], a[2]), i: (n, x) => gl.uniform1i(L(n), x) };
   };
   try { simP = prog(SIM_FS); dispP = prog(DISPLAY_FS); copyP = prog(COPY_FS); } catch (e) { console.error(e); return false; }
   const quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quad);
@@ -1692,8 +2245,78 @@ function makeTarget(w, h){
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   return { tex, fb, w, h };
 }
+// Public-domain band photo (Herb Greene, 1970) from Wikimedia Commons, loaded once for the visuals
+// Photos come from Wikimedia Commons, kept to public domain and Creative Commons licenses that allow changes
+// (no NonCommercial or NoDerivatives), with album covers, posters and logos left out. Ranked, top 20 kept.
+const PHOTO_FALLBACK = [{ url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Grateful_Dead_(1970).png?width=1280', title: 'The Grateful Dead, 1970',
+  artist: 'Herb Greene', license: 'Public domain', page: 'https://commons.wikimedia.org/wiki/File:Grateful_Dead_(1970).png' }];
+const stripTags = h => { const d = document.createElement('div'); d.innerHTML = String(h || ''); return (d.textContent || '').replace(/\s+/g, ' ').trim(); };
+async function photoPool(){
+  const saved = LS.get('photos3', 30 * 864e5); if (saved && saved.length) return saved;
+  const queries = ['Grateful Dead', 'Grateful Dead concert', 'Jerry Garcia Grateful Dead', 'Grateful Dead 1970s', 'Grateful Dead live'];
+  const found = new Map();
+  for (const q of queries){
+    const u = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=50'
+      + '&gsrsearch=' + encodeURIComponent(q + ' filetype:bitmap') + '&prop=imageinfo&iiprop=url|size|mime|extmetadata&iiurlwidth=1280';
+    try {
+      const d = await fetchJSON(u, 15000);
+      for (const pg of Object.values(d.query?.pages || {})){
+        const ii = pg.imageinfo && pg.imageinfo[0]; if (!ii || found.has(pg.title)) continue;
+        const md = ii.extmetadata || {}, lic = (md.LicenseShortName?.value || '').trim();
+        const text = `${pg.title} ${stripTags(md.ImageDescription?.value)} ${stripTags(md.ObjectName?.value)}`;
+        if (!/^image\/(jpeg|png)$/.test(ii.mime)) continue;
+        if (!/public domain|^pd|cc0|cc[ -]by/i.test(lic) || /nc|nd|fair/i.test(lic)) continue;
+        if (!/grateful dead|garcia|weir|lesh|kreutzmann|mickey hart|pigpen|mckernan|mydland|godchaux|constanten|welnick/i.test(text)) continue;
+        if (/cover|album|logo|poster|flyer|ticket|stamp|sticker|shirt|skull|bear|signature|autograph|grave|plaque|mural|graffiti|tattoo|map\b|book|magazine|vinyl|record|\blp\b|\bcd\b|dead ?(&|and) ?company|furthur|ratdog|the dead 20|tribute|bus\b|van\b|car\b|house|building|street|sign\b|trade ad/i.test(text)) continue;
+        if ((ii.width || 0) < 700) continue;
+        let score = 0;
+        if (/concert|live|stage|perform|playing|on stage|show/i.test(text)) score += 3;
+        if (/grateful dead/i.test(text)) score += 2;
+        const yr = (String(md.DateTimeOriginal?.value || '') + ' ' + pg.title).match(/19([6-9]\d)/);
+        if (yr && +yr[1] >= 65 && +yr[1] <= 95) score += 2;
+        if ((ii.width || 0) >= 1400) score += 1;
+        found.set(pg.title, { url: ii.thumburl || ii.url, title: pg.title.replace(/^File:/, '').replace(/\.[a-z]+$/i, ''),
+          artist: stripTags(md.Artist?.value) || 'Unknown photographer', license: lic, page: ii.descriptionurl, score });
+      }
+    } catch {}
+  }
+  const list = [...found.values()].sort((a, b) => b.score - a.score).slice(0, 20);
+  if (list.length) LS.set('photos3', list);
+  return list;
+}
+let photoList = null, photoI = -1;
+async function nextPhoto(){
+  if (trip.imgLoading) return; trip.imgLoading = true;
+  if (!photoList){
+    try { photoList = await photoPool(); } catch { photoList = []; }
+    if (!photoList.length) photoList = PHOTO_FALLBACK;
+    photoI = Math.floor(Math.random() * photoList.length) - 1;
+  }
+  photoI = (photoI + 1) % photoList.length;
+  const ph = photoList[photoI], im = new Image(); im.crossOrigin = 'anonymous';
+  im.onload = () => {
+    try {
+      const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+      [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      if (trip.img) gl.deleteTexture(trip.img.tex);
+      trip.img = { tex, asp: im.naturalWidth / im.naturalHeight };
+    } catch {}
+    trip.imgLoading = false;
+  };
+  im.onerror = () => { trip.imgLoading = false; };
+  im.src = ph.url;
+}
+function renderPhotoCredits(){
+  const el = $('#photoCredits'); if (!el) return;
+  const list = photoList || LS.get('photos3', 1e13) || PHOTO_FALLBACK;
+  el.innerHTML = list.map(p => `<li><a class="link" href="${esc(p.page)}" target="_blank" rel="noopener">${esc(p.title)}</a> by ${esc(p.artist)}, ${esc(p.license)}</li>`).join('');
+}
 function tripResize(){
   const cv = $('#tripCv'), r = $('#tripBox').getBoundingClientRect();
+  tripSize = { w: r.width, h: r.height };
   const dpr = Math.min(devicePixelRatio || 1, 2) * (mq.matches ? .8 : 1);
   cv.width = Math.max(2, Math.round(r.width * dpr)); cv.height = Math.max(2, Math.round(r.height * dpr));
   const sw = Math.max(2, Math.min(1000, Math.floor(cv.width * .55))), sh = Math.max(2, Math.round(sw * cv.height / cv.width));
@@ -1734,6 +2357,8 @@ function tripLoop(now){
   P.f('uPull', c.pull + L.beat * 4 + L.bass * 1.2); P.f('uSpin', c.spin * (1 + L.mid * 2) + L.mid * .4 + L.beat * T.twist);
   P.f('uHue', trip.hue || 0); P.f('uRing', T.ring); P.f('uHit', L.hit || 0); P.f('uSplash', T.splash); P.f('uSplashSize', T.splashSize);
   P.f('uHitHue', L.hh || 0); P.v2('uHitPos', L.hx || 0, L.hy || 0);
+  for (let i = 0; i < 4; i++) spawnU[i * 4 + 2] += dt * (.7 + L.bass * 1.2);
+  P.v4a('uSpawn[0]', spawnU); P.v3a('uSpawnCol[0]', spawnCol);
   P.f('uStars', Math.min(1.5, L.high * 2)); P.f('uBeat', L.beat); P.f('uBeatR', Math.min(1.2, (now / 1000 - trip.beatClock) * .9));
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   const t2 = simA; simA = simB; simB = t2;
@@ -1743,11 +2368,24 @@ function tripLoop(now){
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, simA.tex); P.i('uSim', 0);
   P.f('uAspect', cv.width / cv.height); P.f('uTime', trip.t); setPal(P);
   P.v2('uTexel', 1 / simA.w, 1 / simA.h);
-  P.f('uGlow', c.glow * (1 + L.high * .9)); P.f('uRipple', c.ripple + L.mid * .8); P.f('uSat', c.sat); P.f('uExpo', 1.4 + L.bass * .5);
+  P.f('uGlow', c.glow * (1 + L.high * .9)); P.f('uRipple', c.ripple + L.mid * .8); P.f('uSat', c.sat); P.f('uExpo', 1.15 + L.bass * .45);
   P.f('uKick', L.beat); P.v3('uBack', c.back); P.f('uHue', trip.hue || 0);
+  // photo envelope: every 40 to 80 seconds, fades in over 4s, lingers 8s, fades out over 4s
+  let imgAmt = 0;
+  if (trip.img && store.get('photos', true)){
+    if (!trip.imgNext) trip.imgNext = now / 1000 + rand(20, 40);
+    const e = now / 1000 - trip.imgNext;
+    if (e > 16){ trip.imgNext = now / 1000 + rand(40, 80); nextPhoto(); }   // a different photo next time
+    else if (e > 0) imgAmt = Math.min(1, e / 4, (16 - e) / 4) * .9;
+  }
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, trip.img ? trip.img.tex : simB.tex);
+  P.i('uImg', 1); P.f('uImgAmt', imgAmt); P.f('uImgAsp', trip.img ? trip.img.asp : 1);
+  gl.activeTexture(gl.TEXTURE0);
   P.f('uPunch', T.punch); P.f('uFlash', T.flash); P.f('uSym', trip.T.sym); P.f('uMirror', trip.T.mirror); P.f('uShock', T.shock);
   P.f('uHit', L.hit || 0); P.f('uHitR', Math.min(1.5, (now / 1000 - (L.lastHit || 0)) * 1.1)); P.v2('uHitPos', L.hx || 0, L.hy || 0);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  captureGif(now);
+  sampleBehind(now);
   if (Math.floor(now / 500) !== trip.needTick){ trip.needTick = Math.floor(now / 500); syncTrip(); }
 }
 function syncTrip(){
@@ -1765,11 +2403,17 @@ function applyTrip(target){
 async function openTrip(){
   if (trip.open) return;
   if (!gl && !glInit()){ toast('Trip out needs WebGL. Turn on hardware acceleration in your browser settings.'); return; }
-  if (state.queue) ensureGraph();
-  const el = $('#trip'); el.hidden = false; trip.open = true;
+  const el = $('#trip'); el.hidden = false; trip.open = true;   // open first, so the music gets routed to the visuals
+  if (state.queue){
+    ensureGraph();
+    // iPhone (and Home Screen apps): start a fresh player wired to the visuals, picking up where the song is
+    if (IOS && !audio.paused && audio.routed && !trip.fresh){ trip.fresh = true; swapAudio(true); }
+    if (ctx) ctx.resume();
+  }
   document.body.classList.add('trip-open');
   history.pushState({ tr: 'trip' }, ''); nav.trip = true;
   tripResize();
+  if (store.get('photos', true) && !trip.img) nextPhoto();
   const saved = store.get('trip2', null);
   applyTrip(saved && 'sym' in saved ? saved : randomTrip());
   trip.beatClock = performance.now() / 1000;
@@ -1786,7 +2430,156 @@ function closeTrip(){
 }
 function requestCloseTrip(){ closeTrip(); if (nav.trip){ nav.trip = false; nav.skipPop = true; history.back(); } }
 let diceX = 0, diceY = 0;
+function segueShift(){
+  if (!trip.T) return;
+  const r = randomTrip();
+  trip.T = { ...trip.T, palette: r.palette, sym: r.sym, mirror: r.mirror, hueJump: r.hueJump, twist: r.twist };
+  derive(); spawnShape(); spawnShape(); store.set('trip2', trip.T);
+}
+// Screensaver: open Trip out after 3 quiet minutes of music
+let lastInput = Date.now();
+['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => addEventListener(ev, () => {
+  lastInput = Date.now();
+  if (trip.auto && trip.open){ trip.auto = false; requestCloseTrip(); }
+}, { passive: true, capture: true }));
+setInterval(() => {
+  if (!store.get('saver', false) || trip.open || audio.paused || document.hidden || !state.queue) return;
+  if (!$('#settings').hidden || !$('#car').hidden) return;
+  if (Date.now() - lastInput > 180000){ openTrip().then(() => { trip.auto = true; }); }
+}, 10000);
+// Hold the dice to record a looping GIF (Driftfield's boomerang encoder)
+class ByteW {
+  constructor(n = 4096){ this.a = new Uint8Array(n); this.n = 0; }
+  u8(v){ if (this.n >= this.a.length){ const b = new Uint8Array(this.a.length * 2); b.set(this.a); this.a = b; } this.a[this.n++] = v & 255; }
+  u16(v){ this.u8(v); this.u8(v >> 8); }
+  str(s){ for (const ch of s) this.u8(ch.charCodeAt(0)); }
+  bytes(){ return this.a.subarray(0, this.n); }
+}
+function buildPalette(frames){
+  const per = frames[0].length / 4, stride = Math.max(1, Math.floor(per * frames.length / 24000));
+  const px = []; let k = 0;
+  for (const f of frames) for (let i = (k++ % stride); i < per; i += stride) px.push(f[i * 4], f[i * 4 + 1], f[i * 4 + 2]);
+  const n = px.length / 3, idx = new Uint32Array(n);
+  for (let i = 0; i < n; i++) idx[i] = i;
+  const info = b => {
+    const mn = [255, 255, 255], mx = [0, 0, 0];
+    for (let i = b.s; i < b.e; i++){ const o = idx[i] * 3; for (let c = 0; c < 3; c++){ const v = px[o + c]; if (v < mn[c]) mn[c] = v; if (v > mx[c]) mx[c] = v; } }
+    const r = [mx[0] - mn[0], mx[1] - mn[1], mx[2] - mn[2]];
+    b.ch = r[0] >= r[1] && r[0] >= r[2] ? 0 : r[1] >= r[2] ? 1 : 2;
+    b.score = r[b.ch] * Math.sqrt(b.e - b.s);
+    return b;
+  };
+  const boxes = [info({ s: 0, e: n })];
+  while (boxes.length < 256){
+    let bi = -1, best = 0;
+    boxes.forEach((b, i) => { if (b.e - b.s > 1 && b.score > best){ best = b.score; bi = i; } });
+    if (bi < 0) break;
+    const b = boxes[bi];
+    const sub = Array.from(idx.subarray(b.s, b.e)).sort((x, y) => px[x * 3 + b.ch] - px[y * 3 + b.ch]);
+    idx.set(sub, b.s);
+    const mid = b.s + ((b.e - b.s) >> 1);
+    boxes.splice(bi, 1, info({ s: b.s, e: mid }), info({ s: mid, e: b.e }));
+  }
+  return boxes.map(b => {
+    let r = 0, g = 0, bl = 0;
+    for (let i = b.s; i < b.e; i++){ const o = idx[i] * 3; r += px[o]; g += px[o + 1]; bl += px[o + 2]; }
+    const c = b.e - b.s; return [Math.round(r / c), Math.round(g / c), Math.round(bl / c)];
+  });
+}
+function makeMapper(pal){
+  const cache = new Int16Array(32768).fill(-1);
+  return (r, g, b) => {
+    const key = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+    let v = cache[key]; if (v >= 0) return v;
+    let best = 1e9;
+    for (let i = 0; i < pal.length; i++){ const p = pal[i], dr = p[0] - r, dg = p[1] - g, db = p[2] - b; const d = dr * dr * 2 + dg * dg * 4 + db * db * 3; if (d < best){ best = d; v = i; } }
+    cache[key] = v; return v;
+  };
+}
+function lzw(ind, minCode){
+  const out = new ByteW(ind.length >> 1); out.u8(minCode);
+  const clearCode = 1 << minCode, eoi = clearCode + 1;
+  let nBits = minCode + 1, maxCode = (1 << nBits) - 1, free = clearCode + 2, clearFlag = false;
+  const dict = new Map(); const block = new Uint8Array(255); let bl = 0, acc = 0, accBits = 0;
+  const byte = b => { block[bl++] = b; if (bl === 255){ out.u8(255); for (let i = 0; i < 255; i++) out.u8(block[i]); bl = 0; } };
+  const emit = code => {
+    acc |= code << accBits; accBits += nBits;
+    while (accBits >= 8){ byte(acc & 255); acc >>>= 8; accBits -= 8; }
+    if (free > maxCode || clearFlag){
+      if (clearFlag){ nBits = minCode + 1; maxCode = (1 << nBits) - 1; clearFlag = false; }
+      else { nBits++; maxCode = nBits === 12 ? 4096 : (1 << nBits) - 1; }
+    }
+  };
+  emit(clearCode);
+  let ent = ind[0];
+  for (let i = 1; i < ind.length; i++){
+    const c = ind[i], key = (c << 12) | ent, hit = dict.get(key);
+    if (hit !== undefined){ ent = hit; continue; }
+    emit(ent); ent = c;
+    if (free < 4096) dict.set(key, free++);
+    else { dict.clear(); free = clearCode + 2; clearFlag = true; emit(clearCode); }
+  }
+  emit(ent); emit(eoi);
+  if (accBits > 0) byte(acc & 255);
+  if (bl > 0){ out.u8(bl); for (let i = 0; i < bl; i++) out.u8(block[i]); }
+  out.u8(0); return out.bytes();
+}
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+const c8 = v => v < 0 ? 0 : v > 255 ? 255 : v | 0;
+function encodeFrame(data, w, h, map){
+  const ind = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++){
+    const i = y * w + x, o = i * 4, d = (BAYER[(y & 3) * 4 + (x & 3)] - 7.5) * 1.6;
+    ind[i] = map(c8(data[o] + d), c8(data[o + 1] + d), c8(data[o + 2] + d));
+  }
+  return lzw(ind, 8);
+}
+async function encodeBoomerang(frames, w, h, delayCs){
+  const pal = buildPalette(frames), map = makeMapper(pal), enc = [];
+  for (const f of frames){ enc.push(encodeFrame(f, w, h, map)); await new Promise(r => setTimeout(r, 0)); }
+  const order = [...frames.keys()]; for (let i = frames.length - 2; i > 0; i--) order.push(i);
+  const head = new ByteW();
+  head.str('GIF89a'); head.u16(w); head.u16(h); head.u8(0xF7); head.u8(0); head.u8(0);
+  for (let i = 0; i < 256; i++){ const c = pal[i] || [0, 0, 0]; head.u8(c[0]); head.u8(c[1]); head.u8(c[2]); }
+  head.u8(0x21); head.u8(0xFF); head.u8(11); head.str('NETSCAPE2.0'); head.u8(3); head.u8(1); head.u16(0); head.u8(0);
+  const parts = [head.bytes()];
+  for (const i of order){
+    const fh = new ByteW(32);
+    fh.u8(0x21); fh.u8(0xF9); fh.u8(4); fh.u8(0); fh.u16(delayCs); fh.u8(0); fh.u8(0);
+    fh.u8(0x2C); fh.u16(0); fh.u16(0); fh.u16(w); fh.u16(h); fh.u8(0);
+    parts.push(fh.bytes(), enc[i]);
+  }
+  parts.push(new Uint8Array([0x3B]));
+  return new Blob(parts, { type: 'image/gif' });
+}
+const GIF = { cap: null, busy: false };
+function startGif(){
+  if (GIF.cap || GIF.busy) return;
+  const cv = $('#tripCv'), w = Math.min(mq.matches ? 360 : 440, cv.width), h = Math.max(2, Math.round(w * cv.height / cv.width));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  GIF.cap = { cx: c.getContext('2d', { willReadFrequently: true }), w, h, frames: [], need: 22, last: 0 };
+  toast('Recording a loop…'); haptic();
+}
+function captureGif(now){
+  const g = GIF.cap; if (!g || now - g.last < 85) return;
+  g.last = now;
+  g.cx.drawImage($('#tripCv'), 0, 0, g.w, g.h);
+  g.frames.push(g.cx.getImageData(0, 0, g.w, g.h).data);
+  if (g.frames.length < g.need) return;
+  GIF.cap = null; GIF.busy = true; toast('Making your GIF…');
+  encodeBoomerang(g.frames, g.w, g.h, 8).then(blob => {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `deadjams-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.gif`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('GIF saved');
+  }).catch(() => toast('The GIF couldn’t be made. Try again.')).finally(() => { GIF.busy = false; });
+}
+let holdT = 0, held = false;
+$('#bDice').addEventListener('pointerdown', () => { held = false; clearTimeout(holdT); holdT = setTimeout(() => { held = true; startGif(); }, 550); });
+['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('#bDice').addEventListener(ev, () => clearTimeout(holdT)));
 function rollDice(){
+  if (held){ held = false; return; }
+  haptic();
   const spinX = 360 * (2 + Math.floor(Math.random() * 2)), spinY = 360 * (2 + Math.floor(Math.random() * 2));
   diceX = Math.ceil(diceX / 360) * 360 + spinX;   // whole turns only, so it lands face-on
   diceY = Math.ceil(diceY / 360) * 360 + spinY;
@@ -1800,7 +2593,24 @@ $('#tripScrim').addEventListener('click', requestCloseTrip);
 $('#trip').addEventListener('click', e => { if (e.target === e.currentTarget) requestCloseTrip(); });
 $('#tripBtn').onclick = openTrip;
 $('#shTrip').onclick = openTrip;
-addEventListener('resize', () => { if (trip.open) tripResize(); });
+let tripSize = { w: 0, h: 0 }, tripResizeT = 0;
+addEventListener('resize', () => {
+  if (!trip.open) return;
+  clearTimeout(tripResizeT);
+  tripResizeT = setTimeout(() => {
+    const r = $('#tripBox').getBoundingClientRect();
+    if (Math.abs(r.width - tripSize.w) < 2 && Math.abs(r.height - tripSize.h) < 140) return;
+    tripResize();
+  }, 150);
+});
+// iPhone ignores the viewport setting for pinch and double-tap zoom, so stop those from rescaling the app
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 320 && !e.target.closest('input, textarea, select')) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
 
 /* ---------- car mode ---------- */
 function showCar(){
@@ -1831,8 +2641,6 @@ async function surprise(){
     loadTrack(0);
   } catch (e) { $('#carTrack').textContent = "That show didn't load. Try again."; }
 }
-$('#carTop').onclick = showCar;
-$('#shCar').onclick = () => { closeSheet(); setTimeout(showCar, 50); };
 $('#carExit').onclick = exitCar;
 $('#carPlay').onclick = () => { if (state.queue) togglePlay(); else surprise(); };
 $('#carNext').onclick = () => { const q = state.queue; if (!q) return surprise(); if (q.index < q.tracks.length - 1) loadTrack(q.index + 1); else continueToNextShow(false); };
@@ -1840,23 +2648,84 @@ $('#carPrev').onclick = prev;
 $('#carSurprise').onclick = surprise;
 
 
+/* ---------- settings ---------- */
+function applyTheme(){
+  const t = store.get('theme', 'system');
+  const r = t === 'system' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : t;
+  document.documentElement.dataset.theme = r;
+  $('#themeMeta').setAttribute('content', r === 'light' ? '#eef2fb' : '#07102a');
+  document.querySelectorAll('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === t));
+}
+matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme);
+function openSettings(){
+  renderPhotoCredits();
+  $('#setAuto').checked = store.get('autonext', true);
+  $('#setPhotos').checked = store.get('photos', true);
+  $('#setSaver').checked = store.get('saver', false);
+  $('#settings').hidden = false; document.body.classList.add('trip-open');
+  history.pushState({ tr: 'settings' }, ''); nav.settings = true;
+  $('#setClose').focus({ preventScroll: true });
+}
+function hideSettings(){ $('#settings').hidden = true; document.body.classList.remove('trip-open'); }
+function closeSettings(){ hideSettings(); if (nav.settings){ nav.settings = false; nav.skipPop = true; history.back(); } }
+$('#setBtn').onclick = openSettings;
+$('#setClose').onclick = closeSettings;
+$('#setScrim').onclick = closeSettings;
+$('#themeSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; store.set('theme', b.dataset.v); applyTheme(); };
+$('#setAuto').onchange = e => store.set('autonext', e.target.checked);
+$('#setPhotos').onchange = e => store.set('photos', e.target.checked);
+$('#setSaver').onchange = e => store.set('saver', e.target.checked);
+$('#setCast').onclick = () => { closeSettings(); setTimeout(openSpeakers, 60); };
+$('#libBtn').onclick = openLibrary;
+$('#setEq').onclick = () => { closeSettings(); setTimeout(() => toggleEq(true), 60); };
+$('#setCar').onclick = () => { closeSettings(); setTimeout(showCar, 60); };
+// image.png: if the folder has one, it becomes the image beside the title and the icons (cropped to a square)
+(() => {
+  const im = new Image();
+  im.onload = () => {
+    let fav = 'image.png', touch = 'image.png', mark = 'image.png';
+    try {
+      const sq = n => {
+        const c = document.createElement('canvas'); c.width = c.height = n; const x = c.getContext('2d');
+        const w = im.naturalWidth, h = im.naturalHeight, side = Math.min(w, h);
+        x.imageSmoothingQuality = 'high';
+        x.drawImage(im, (w - side) / 2, (h - side) / 2, side, side, 0, 0, n, n);
+        return c.toDataURL('image/png');
+      };
+      fav = sq(64); touch = sq(180); mark = sq(160);
+    } catch {}   // opened straight from disk, some browsers won't let the page read the image; it's used as-is instead
+    $('#favLink').href = fav; $('#touchLink').href = touch;
+    $('#markImg').src = mark; $('#markImg').hidden = false;
+    document.querySelector('.reel').style.display = 'none';
+  };
+  im.src = 'image.png';
+})();
+$('#setClear').onclick = () => {
+  Object.keys(localStorage).filter(k => k.startsWith('dj:')).forEach(k => localStorage.removeItem(k));
+  metaCache.clear(); yearCache.clear(); songCache.clear(); toast('Saved shows cleared');
+};
+$('#shEq').onclick = () => toggleEq(true);
+applyTheme();
+
 /* ---------- boot ---------- */
 async function boot(){
   buildDial(); buildEq(); saveEq(); renderDetail();
+  loadSotd();
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
   const id = decodeURIComponent(location.hash.slice(1));
   if (id){
     try {
-      const data = await getJSON(`${API}/metadata/${encodeURIComponent(id)}`);
-      const date = String(one(data.metadata?.date) || '').slice(0, 10);
+      const m = await fetchMeta(id);
+      const date = String(one(m.md && m.md.date) || '').slice(0, 10);
       if (date){
-        metaCache.set(id, parseMeta(id, data));
         await loadYear(+date.slice(0, 4));
         const g = state.shows.find(x => x.date === date);
-        if (g){ openShow(g, id); return; }
+        if (g){ openShow(g, id); restoreSession(); return; }
       }
     } catch {}
   }
-  loadYear(state.year);
+  await loadYear(state.year);
+  restoreSession();
 }
 boot();
 })();
