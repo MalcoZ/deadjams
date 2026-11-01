@@ -61,6 +61,20 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="deadjams">
+<script>
+/* Google Analytics: paste your GA4 Measurement ID here (looks like G-AB12CD34EF). Leave it as is to turn analytics off. */
+window.DJ_GA_ID = 'G-R6JJM00ZHP';
+(function(){
+  var id = window.DJ_GA_ID, off = false;
+  try { off = JSON.parse(localStorage.getItem('taperoom:noStats')) === true; } catch (e) {}
+  if (!id || /X{6}/.test(id) || off) return;
+  var s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id; document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); };
+  gtag('js', new Date());
+  gtag('config', id, { app_name: 'deadjams', display_mode: (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone ? 'home_screen' : 'browser' });
+})();
+</script>
 <link rel="icon" id="favLink" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23a6d4ff'/><stop offset='.5' stop-color='%237a9dff'/><stop offset='1' stop-color='%23bba5ff'/></linearGradient></defs><rect x='3' y='13' width='58' height='38' rx='6' fill='url(%23g)'/><rect x='9' y='18' width='46' height='20' rx='3' fill='%230b1a4a' opacity='.22'/><rect x='15' y='23' width='34' height='11' rx='5.5' fill='%230b1a4a'/><circle cx='23' cy='28.5' r='4' fill='url(%23g)'/><circle cx='41' cy='28.5' r='4' fill='url(%23g)'/><circle cx='23' cy='28.5' r='1.4' fill='%230b1a4a'/><circle cx='41' cy='28.5' r='1.4' fill='%230b1a4a'/><path d='M17 51 L20.5 43 H43.5 L47 51 Z' fill='%230b1a4a' opacity='.3'/><circle cx='8' cy='18' r='1.3' fill='%230b1a4a' opacity='.35'/><circle cx='56' cy='18' r='1.3' fill='%230b1a4a' opacity='.35'/></svg>">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" id="touchLink" href="apple-touch-icon.png">
@@ -733,7 +747,9 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   .s-meta{grid-column:2;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px}
   .detail-pane{display:none;padding:0 16px 24px}
   body.viewing .dial,body.viewing .list-pane{display:none}
-  body.viewing .layout{padding-top:0}
+  body.viewing .layout{padding-top:0;padding-left:0;padding-right:0}
+  body.viewing .detail-pane{border-radius:0;border:0;border-left:0;border-right:0;box-shadow:none;margin:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+  body.viewing .back{border-radius:0}
   /* Header: a fixed frosted strip from the very top edge. Scrolling shrinks the title and folds the buttons away. */
   .top{position:fixed;left:0;right:0;top:0;z-index:12;flex-direction:column;align-items:stretch;gap:0;margin:0;
     padding:calc(8px + env(safe-area-inset-top,0px) + var(--pill,0px)) 14px calc(10px - 4px * var(--shrink,0));
@@ -3556,6 +3572,58 @@ $('#hdrSearch').onclick = () => { window.scrollTo({ top: 0 }); document.body.cla
 setInterval(() => { if (!state.casting && state.queue && document.body.classList.contains('playing') === audio.paused) syncPlay(); }, 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden){ syncPlay(); onTime(); } });
 
+/* ---------- analytics ---------- */
+function track(name, params = {}){
+  try { if (window.gtag && !store.get('noStats', false)) window.gtag('event', name, params); } catch {}
+}
+const showParams = g => g ? { show_date: g.date, show_year: +g.date.slice(0, 4), venue: g.venue, city: g.coverage } : {};
+const wrap = (fn, before) => function(...a){ try { before.apply(this, a); } catch {} return fn.apply(this, a); };
+loadYear = wrap(loadYear, y => { if (window.djReady) track('select_year', { year: y }); });   // not the year the app opens on
+loadOnThisDay = wrap(loadOnThisDay, () => track('on_this_day'));
+openLibrary = wrap(openLibrary, () => track('open_library'));
+randomShow = wrap(randomShow, () => track('random_show'));
+openShow = wrap(openShow, (g, id, auto) => { if (!auto) track('open_show', { ...showParams(g), from: state.mode }); });
+loadTrack = wrap(loadTrack, i => { const q = state.queue; if (q && q.tracks[i]) track('play_song', { song: q.tracks[i].title, track_number: i + 1, ...showParams(q.show), recording: q.id, from: state.mode, output: state.casting ? 'cast' : state.remote ? 'airplay' : 'device' }); });
+onEnded = wrap(onEnded, () => { const q = state.queue; if (q) track('song_complete', { song: q.tracks[q.index].title, ...showParams(q.show) }); });
+runSearch = wrap(runSearch, raw => track('search', { search_term: String(raw).trim().slice(0, 100) }));
+openTrip = wrap(openTrip, () => { trip.openedAt = Date.now(); track('trip_out_open'); });
+closeTrip = wrap(closeTrip, () => { if (trip.open) track('trip_out_close', { seconds: Math.round((Date.now() - (trip.openedAt || Date.now())) / 1000) }); });
+const rollDiceOriginal = rollDice;
+rollDice = wrap(rollDice, () => track('trip_out_roll'));
+openEqFull = wrap(openEqFull, () => track('open_equalizer'));
+openSpeakers = wrap(openSpeakers, () => track('open_speakers', { browser: window.WebKitPlaybackTargetAvailabilityEvent ? 'airplay' : castReady ? 'cast' : 'other' }));
+setRemote = wrap(setRemote, on => { if (!!on !== !!state.remote) track(on ? 'airplay_connect' : 'airplay_disconnect'); });
+castStart = wrap(castStart, () => { if (!state.casting) track('cast_connect'); });
+toggleFavShow = wrap(toggleFavShow, g => track(isFavShow(g.date) ? 'unsave_show' : 'save_show', showParams(g)));
+toggleFavSong = wrap(toggleFavSong, (g, m, i) => track(isFavSong(m.id, i) ? 'unsave_song' : 'save_song', { song: m.tracks[i].title, ...showParams(g) }));
+onAudioError = wrap(onAudioError, () => { const q = state.queue; if (q) track('song_error', { song: q.tracks[q.index].title, recording: q.id }); });
+// buttons wired before the wrapping above still point at the originals, so point them at the tracked versions
+$('#tripBtn').onclick = () => openTrip(); $('#shTrip').onclick = () => openTrip();
+$('#bDice').removeEventListener('click', rollDiceOriginal); $('#bDice').addEventListener('click', () => rollDice());
+$('#setEq').onclick = () => openEqFull(); $('#castBtn').onclick = () => openSpeakers(); $('#shCast').onclick = () => openSpeakers();
+$('#otd').onclick = () => loadOnThisDay(); $('#libBtn').onclick = () => openLibrary();
+// taps that aren't functions of their own
+document.addEventListener('click', e => {
+  const t = e.target;
+  const tab = t.closest('.tab'); if (tab) track('view_tab', { tab: tab.dataset.tab });
+  const rec = t.closest('.rec'); if (rec) track('change_recording', { recording: rec.dataset.id });
+  const lv = t.closest('[data-loved]'); if (lv) track('top50_pick', { show_date: lv.dataset.loved });
+  if (t.closest('#lovedMore')) track('top50_shuffle');
+  const so = t.closest('[data-sotd]'); if (so) track('show_of_the_day', { action: so.dataset.sotd });
+  const chip = t.closest('#presets .chip'); if (chip) track('eq_preset', { preset: chip.dataset.p });
+  if (t.closest('#themeSeg button')) track('appearance', { mode: t.closest('button').dataset.v });
+  if (t.closest('#setBtn')) track('open_settings');
+  if (t.closest('#homeLink')) track('go_home');
+}, true);
+$('#palSel').addEventListener('change', e => track('palette', { palette: e.target.value }));
+// minutes of actual listening, one event per minute played
+let listenSec = 0;
+setInterval(() => {
+  const playing = state.casting ? remotePlaying() : (state.queue && !audio.paused);
+  if (!playing) return;
+  if (++listenSec % 60 === 0){ const q = state.queue; track('listen_minute', { song: q.tracks[q.index].title, ...showParams(q.show), trip_out: trip.open ? 1 : 0 }); }
+}, 1000);
+
 /* ---------- boot ---------- */
 async function boot(){
   buildDial(); buildEq(); saveEq(); renderDetail();
@@ -3568,11 +3636,12 @@ async function boot(){
       if (date){
         await loadYear(+date.slice(0, 4));
         const g = state.shows.find(x => x.date === date);
-        if (g){ openShow(g, id); restoreSession(); loadTop50(); return; }
+        if (g){ openShow(g, id); window.djReady = true; restoreSession(); loadTop50(); return; }
       }
     } catch {}
   }
   await loadYear(state.year);
+  window.djReady = true;
   restoreSession();
   setTimeout(dialDemo, 400);
   loadTop50();
