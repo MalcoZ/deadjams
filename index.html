@@ -577,6 +577,26 @@ body.trip-open{overflow:hidden}
 .songBtn{align-items:center;justify-content:center;gap:6px}
 .songBtn svg{width:16px;height:16px}
 .minibar{display:none}
+.tv-info{display:none}
+.trip.tv .trip-scrim{background:#000;backdrop-filter:none;-webkit-backdrop-filter:none}
+.trip.tv .trip-box{width:100vw;height:100vh;height:100dvh;border-radius:0;border:0}
+.trip.tv #bDice,.trip.tv .trip-x{display:none}
+.trip.tv .trip-need{top:4vh;bottom:auto;left:50%;font-size:clamp(13px,1vw,20px)}
+.trip.tv .tv-info{display:block;position:absolute;inset:0;pointer-events:none;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.55)}
+.tv-brand{position:absolute;left:4vw;top:4vh;margin:0;font:800 clamp(18px,2.2vw,40px)/1 "Fraunces",Georgia,serif;color:var(--wm2);opacity:.9}
+.tv-now{position:absolute;left:4vw;bottom:7vh;max-width:58vw}
+.tv-date{margin:0 0 .6vh;font-size:clamp(16px,1.8vw,34px);font-weight:700;color:var(--wm2)}
+.tv-song{margin:0;font-size:clamp(34px,5.4vw,104px);font-weight:850;letter-spacing:-.035em;line-height:1.02}
+.tv-next{margin:1.2vh 0 2vh;font-size:clamp(15px,1.6vw,30px);opacity:.82}
+.tv-prog{height:clamp(4px,.5vh,8px);width:min(40vw,700px);border-radius:99px;background:rgba(255,255,255,.22);overflow:hidden}
+.tv-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--c1),var(--c3))}
+.tv-list{position:absolute;right:4vw;top:50%;transform:translateY(-50%);list-style:none;margin:0;padding:1.6vh 1.6vw;width:min(30vw,560px);border-radius:1.6vw;background:rgba(0,0,0,.32)}
+.tv-list li{display:flex;gap:1vw;padding:.7vh 0;font-size:clamp(14px,1.45vw,28px);opacity:.62;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv-list li b{min-width:2.2em;text-align:right;font-variant-numeric:tabular-nums}
+.tv-list li.on{opacity:1;font-weight:800;color:var(--wm2)}
+.tv-keys{position:absolute;right:4vw;bottom:4vh;margin:0;font-size:clamp(12px,1vw,20px);opacity:.55;transition:opacity 1s}
+.tv-keys.gone{opacity:0}
+@media (max-width:900px){.tv-list{display:none}.tv-now{max-width:88vw}}
 .set-credit summary{cursor:pointer;font-weight:650;color:var(--ink)}
 .set-credit ul{margin:8px 0 0;padding-left:18px}
 .set-credit li{margin:0 0 6px}
@@ -626,7 +646,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   body{-webkit-tap-highlight-color:transparent}
   body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
   button{touch-action:manipulation}
-  .top{padding:calc(12px + env(safe-area-inset-top,0px)) 12px 2px;gap:10px}
+  .top{padding:calc(22px + env(safe-area-inset-top,0px)) 12px 2px;gap:10px}
   .wordmark svg{height:44px}
   .word{font-size:40px}
   .brand{padding-bottom:4px;min-width:0}
@@ -634,7 +654,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   .brand p{display:none}
   .tools{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .search{grid-column:1/-1}
-  .minibar{display:block;position:fixed;left:0;right:0;top:0;z-index:12;padding:calc(6px + env(safe-area-inset-top,0px)) 16px 6px;background:var(--bg);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .25s ease}
+  .minibar{display:block;position:fixed;left:0;right:0;top:0;z-index:12;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 8px;background:var(--bg);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .25s ease}
   .minibar.show{transform:none}
   body.viewing .minibar{display:none}
   .minibar .word{font-size:26px}
@@ -682,11 +702,11 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   .s-meta{grid-column:2;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px}
   .detail-pane{display:none;padding:0 16px 24px}
   body.viewing .dial,body.viewing .list-pane,body.viewing .tools{display:none}
-  body.viewing .top{position:sticky;top:0;z-index:8;padding:calc(6px + env(safe-area-inset-top,0px)) 16px 4px;background:var(--bg);margin:0}
+  body.viewing .top{position:sticky;top:0;z-index:8;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 6px;background:var(--bg);margin:0}
   body.viewing .word{font-size:26px}
   body.viewing .layout{padding-top:0}
   body.viewing .detail-pane{display:block}
-  .back{display:flex;align-items:center;position:sticky;top:calc(env(safe-area-inset-top,0px) + 44px);z-index:5;width:calc(100% + 32px);margin:0 -16px 10px;padding:10px 16px;
+  .back{display:flex;align-items:center;position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:5;width:calc(100% + 32px);margin:0 -16px 10px;padding:10px 16px;
     background:var(--surface-solid);border-bottom:1px solid var(--line);border-radius:22px 22px 0 0;font-size:16px;color:var(--ink)}
   .d-dow{font-size:13px;margin-bottom:2px}
   .d-date{font-size:30px;letter-spacing:-.035em}
@@ -818,6 +838,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     <button class="ic mnext" id="mnext" aria-label="Next track" disabled><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
     <button class="ic volic" id="mute" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
     <input type="range" class="bar vol" id="vol" min="0" max="100" value="90" aria-label="Volume">
+    <button class="btn" id="tvBtn" hidden>TV mode</button>
     <button class="tripbtn" id="tripBtn">Trip out</button>
     <button class="ic castbtn" id="castBtn" aria-label="Play on a speaker or TV" title="Play on a speaker or TV"><svg viewBox="0 0 24 24" class="stroke"><rect x="7" y="3" width="10" height="18" rx="2.5"/><circle cx="12" cy="14.5" r="2.6"/><circle cx="12" cy="7.5" r="1"/><path d="M3.5 8.5a8 8 0 0 0 0 7M20.5 8.5a8 8 0 0 1 0 7"/></svg></button>
     <button class="btn setbtn" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" class="stroke"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button>
@@ -841,7 +862,6 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
       <input type="range" class="bar" id="shSeek" min="0" max="1000" value="0" aria-label="Seek" disabled>
       <span id="shDur">0:00</span>
     </div>
-    <div class="timeline" id="timeline"></div>
     <div class="sh-ctrls">
       <button class="ic sk" id="shBack15" aria-label="Back 15 seconds"><svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="6.4" font-weight="700" font-family="system-ui,sans-serif">15</text></svg></button>
       <button class="ic" id="shPrev" aria-label="Previous track"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
@@ -859,6 +879,12 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     <canvas id="tripCv" aria-hidden="true"></canvas>
     <button class="trip-x" id="tripX" aria-label="Close trip out"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <p class="trip-need" id="tripNeed" hidden></p>
+    <div class="tv-info" id="tvInfo" aria-live="polite">
+      <p class="tv-brand">deadjams</p>
+      <div class="tv-now"><p class="tv-date" id="tvDate"></p><h2 class="tv-song" id="tvSong">Nothing playing</h2><p class="tv-next" id="tvNext"></p><div class="tv-prog"><i id="tvProg"></i></div></div>
+      <ol class="tv-list" id="tvList"></ol>
+      <p class="tv-keys" id="tvKeys">Left and right change songs · OK plays and pauses · Up rolls new visuals · Back exits</p>
+    </div>
     <button id="bDice" aria-label="Roll the dice for new visuals">
       <span class="wrap"><span class="view"><span class="cube" id="cube">
         <span class="face f1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 17.5h1.2c1.3 0 2.5-.6 3.3-1.7l5.6-8c.7-1.1 2-1.7 3.3-1.7h5.1"/><path d="m18.2 2.9 3.4 3.2-3.4 3.2"/><path d="M2.5 6.5h1.2c1.1 0 2.1.4 2.8 1.2"/><path d="M21.5 17.5h-5.1c-1.3 0-2.5-.6-3.3-1.6l-.6-.9"/><path d="m18.2 14.3 3.4 3.2-3.4 3.2"/></svg></span>
@@ -901,6 +927,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     </div>
     <div class="set-group">
       <h3>Playback</h3>
+      <button class="set-row" id="setTv"><span>TV mode<small>A big-screen now-playing view with the visuals, for screen mirroring or your TV's web browser</small></span><b>Open</b></button>
       <label class="set-row"><span>Keep playing<small>When a show ends, start the next one in the list</small></span><input type="checkbox" id="setAuto"></label>
     </div>
     <div class="set-group">
@@ -1483,8 +1510,7 @@ function pickLoved(){
   }).catch(() => {}));
 }
 function lovedHTML(){
-  const head = `<p class="pick-hint">Choose a year on the dial or search for a song, then pick a show.</p>
-    <div class="loved-top"><h2 class="loved-h">From the top 50</h2>${loved.length ? '<button class="btn" id="lovedMore">Show others</button>' : ''}</div>`;
+  const head = `<div class="loved-top"><h2 class="loved-h">From the top 50</h2>${loved.length ? '<button class="btn" id="lovedMore">Show others</button>' : ''}</div>`;
   if (!top50) return head + '<div class="skel"></div>'.repeat(3);
   if (!loved.length) return head + '<p class="pick-hint">The top-rated shows didn’t load from archive.org.</p>';
   return head + `<div class="loved">${loved.map(({ g, why }) => `<button class="lv" data-loved="${g.date}">
@@ -1646,13 +1672,13 @@ function tabBody(m, playingThis){
 
 // The whole show as a strip of segments, one per song, with a gap at each set break. Tap a segment to jump there.
 function renderTimeline(){
-  const q = state.queue; const els = [$('#timeline')];
+  const q = state.queue; const els = [$('#timeline')].filter(Boolean);
   if (!q){ els.forEach(e => e && (e.innerHTML = '')); return; }
   const m = metaCache.get(q.id); if (m) prepTracks(m);
   const html = q.tracks.map((t, i) => `<i data-ti="${i}" class="${i < q.index ? 'done' : i === q.index ? 'cur' : ''}${i > 0 && t.set && q.tracks[i - 1].set !== t.set ? ' gap' : ''}" style="flex:${Math.max(30, t.len || 300)}" title="${esc(t.title)}">${i === q.index ? '<b></b>' : ''}</i>`).join('');
   els.forEach(e => { if (e) e.innerHTML = html; });
 }
-['#timeline'].forEach(sel => $(sel).addEventListener('click', e => { const i = e.target.closest('[data-ti]'); if (i){ loadTrack(+i.dataset.ti); haptic(); } }));
+['#timeline'].filter(sel => $(sel)).forEach(sel => $(sel).addEventListener('click', e => { const i = e.target.closest('[data-ti]'); if (i){ loadTrack(+i.dataset.ti); haptic(); } }));
 // Desktop: hand off to the preloaded next song a hair before this one ends, for gapless segues
 function gaplessWatch(){
   requestAnimationFrame(gaplessWatch);
@@ -1815,6 +1841,7 @@ function castStop(){
 function castProgress(){
   if (!state.casting || !remotePlayer) return;
   const c = remotePlayer.currentTime, d = remotePlayer.duration || 0, pr = d ? c / d : 0;
+  if (trip.tv) $('#tvProg').style.width = pr * 100 + '%';
   $('#miniProg').style.width = pr * 100 + '%';
   SEEKS.forEach(([sel, cur, dur]) => { const el = $(sel); $(dur).textContent = clock(d); if (dragging === el) return; $(cur).textContent = clock(c); el.value = pr * 1000; el.style.setProperty('--p', pr * 100 + '%'); });
 }
@@ -2079,6 +2106,7 @@ let posT = 0;
 function onTime(){
   const q = state.queue;
   if (q && !q.buffered && audio.currentTime > 4){ q.buffered = true; bufferNext(); }
+  if (trip.tv && isFinite(audio.duration) && audio.duration > 0) $('#tvProg').style.width = (audio.currentTime / audio.duration * 100) + '%';
   if (q){
     const segs = document.querySelectorAll('.timeline i.cur b'), d2 = isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
     segs.forEach(b => b.style.width = (d2 ? Math.min(100, audio.currentTime / d2 * 100) : 0) + '%');
@@ -2114,7 +2142,7 @@ function updateNowPlaying(){
   $('#sheetYear').textContent = g.date.slice(0, 4);
   $('#carDate').textContent = `${fmtLong(g.date)}, ${g.venue}`;
   $('#carTrack').textContent = t.title;
-  syncTrip();
+  syncTrip(); tvUpdate();
   document.title = `${t.title} — ${fmtShort(g.date)} ${g.date.slice(0, 4)} | deadjams`;
   if ('mediaSession' in navigator){
     const nx = q.tracks[q.index + 1];
@@ -2708,7 +2736,7 @@ function renderPhotoCredits(){
 function tripResize(){
   const cv = $('#tripCv'), r = $('#tripBox').getBoundingClientRect();
   tripSize = { w: r.width, h: r.height };
-  const dpr = Math.min(devicePixelRatio || 1, 2) * (mq.matches ? .8 : 1);
+  const dpr = Math.min(devicePixelRatio || 1, 2) * (trip.tv ? .6 : mq.matches ? .8 : 1);   // big TV screens draw at a lighter resolution
   cv.width = Math.max(2, Math.round(r.width * dpr)); cv.height = Math.max(2, Math.round(r.height * dpr));
   const sw = Math.max(2, Math.min(1000, Math.floor(cv.width * .55))), sh = Math.max(2, Math.round(sw * cv.height / cv.width));
   if (simA && simA.w === sw && simA.h === sh) return;
@@ -2821,6 +2849,7 @@ async function openTrip(){
 }
 function closeTrip(){
   if (!trip.open) return;
+  if (trip.tv){ trip.tv = false; if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); setTimeout(() => $('#trip').classList.remove('tv'), 330); }
   trip.open = false;
   setTimeout(() => { if (!trip.open) cancelAnimationFrame(trip.raf); }, 320);   // keep drawing while it fades
   if (state.queue) ensureGraph();
@@ -3132,6 +3161,51 @@ function closeEqFull(){ hideEqFull(); if (nav.eq){ nav.eq = false; nav.skipPop =
 $('#setEq').onclick = openEqFull;
 $('#eqfClose').onclick = closeEqFull;
 $('#sheetSet').onclick = openSettings;
+// TV mode: open it on a TV's web browser or while screen mirroring; the remote's arrows, OK, and media keys drive it
+const TV_UA = /SMART-TV|SmartTV|Tizen|Web0S|webOS|BRAVIA|AFTS|AFTM|CrKey|HbbTV|NetCast/i.test(navigator.userAgent);
+function tvUpdate(){
+  const q = state.queue;
+  if (!q){ $('#tvSong').textContent = 'Nothing playing'; $('#tvDate').textContent = ''; $('#tvNext').textContent = 'Pick a show to start'; $('#tvList').innerHTML = ''; return; }
+  const t = q.tracks[q.index], nx = q.tracks[q.index + 1], g = q.show;
+  $('#tvDate').textContent = `${fmtLong(g.date)} · ${g.venue}${g.coverage ? ', ' + g.coverage : ''}`;
+  $('#tvSong').textContent = t.title;
+  $('#tvNext').textContent = nx ? `Up next: ${nx.title}` : 'Last song of the show';
+  const from = Math.max(0, Math.min(q.index - 3, q.tracks.length - 9));
+  $('#tvList').innerHTML = q.tracks.slice(from, from + 9).map((x, k) => `<li class="${from + k === q.index ? 'on' : ''}"><b>${from + k + 1}</b><span>${esc(x.title)}</span></li>`).join('');
+}
+async function openTV(){
+  trip.tv = true; $('#trip').classList.add('tv');
+  if (!$('#settings').hidden) hideSettings(), nav.settings = false;
+  await openTrip();
+  if (!trip.open){ trip.tv = false; $('#trip').classList.remove('tv'); return; }
+  tripResize(); tvUpdate();
+  document.documentElement.requestFullscreen?.().catch(() => {});
+  const k = $('#tvKeys'); k.classList.remove('gone'); setTimeout(() => k.classList.add('gone'), 7000);
+  try { ['MediaPlayPause', 'MediaPlay', 'MediaPause', 'MediaFastForward', 'MediaRewind', 'MediaTrackNext', 'MediaTrackPrevious'].forEach(n => tizen.tvinputdevice.registerKey(n)); } catch {}
+}
+$('#setTv').onclick = () => { closeSettings(); setTimeout(openTV, 80); };
+$('#tvBtn').onclick = openTV;
+if (TV_UA){ $('#tvBtn').hidden = false; document.body.classList.add('tvdevice'); }
+// Remote and keyboard media keys, anywhere in the app
+document.addEventListener('keydown', e => {
+  const k = e.key, c = e.keyCode;
+  const media = { MediaPlayPause: 'pp', MediaPlay: 'play', MediaPause: 'pause', MediaTrackNext: 'next', MediaTrackPrevious: 'prev', MediaFastForward: 'ff', MediaRewind: 'rw' }[k]
+    || { 10252: 'pp', 415: 'play', 19: 'pause', 417: 'ff', 412: 'rw', 10233: 'next', 10232: 'prev' }[c];
+  if (media){
+    e.preventDefault();
+    if (media === 'pp') togglePlay(); else if (media === 'play'){ if (audio.paused) togglePlay(); } else if (media === 'pause'){ if (!audio.paused) togglePlay(); }
+    else if (media === 'next') next(); else if (media === 'prev') prev(); else if (media === 'ff') skip(15); else if (media === 'rw') skip(-15);
+    return;
+  }
+  if (!(trip.open && trip.tv)) return;
+  if (k === 'ArrowRight'){ e.preventDefault(); e.stopImmediatePropagation(); next(); }
+  else if (k === 'ArrowLeft'){ e.preventDefault(); e.stopImmediatePropagation(); prev(); }
+  else if (k === 'ArrowUp'){ e.preventDefault(); e.stopImmediatePropagation(); rollDice(); }
+  else if (k === 'ArrowDown'){ e.preventDefault(); e.stopImmediatePropagation(); skip(15); }
+  else if (k === 'Enter' || k === ' '){ e.preventDefault(); e.stopImmediatePropagation(); togglePlay(); }
+  else if (k === 'Escape' || k === 'Backspace' || k === 'GoBack' || k === 'BrowserBack' || c === 10009 || c === 461){ e.preventDefault(); e.stopImmediatePropagation(); requestCloseTrip(); }
+  $('#tvKeys').classList.remove('gone'); clearTimeout(trip.keysT); trip.keysT = setTimeout(() => $('#tvKeys').classList.add('gone'), 5000);
+}, true);
 $('#setClear').onclick = () => {
   Object.keys(localStorage).filter(k => k.startsWith('dj:')).forEach(k => localStorage.removeItem(k));
   metaCache.clear(); yearCache.clear(); songCache.clear(); toast('Saved shows cleared');
@@ -3281,17 +3355,16 @@ function dialDemo(){
   const n = store.get('dialHints2', 0); if (n >= 3) return;
   store.set('dialHints2', n + 1);
   const hint = $('#dialHint'), track = $('#dial'), f = $('#finger');
-  hint.textContent = mq.matches ? 'Swipe the years, tap one to pick it' : 'Drag or scroll the years, click one to pick it';
-  if (reduceMotion){ hint.hidden = false; setTimeout(() => { hint.hidden = true; }, 4000); return; }
+  if (reduceMotion) return;
   let stop = false;
-  const cancel = () => { stop = true; f.hidden = true; hint.hidden = true; };
+  const cancel = () => { stop = true; f.hidden = true; };
   track.addEventListener('pointerdown', cancel, { once: true });
   const start = track.scrollLeft;
   // [time ms, finger x offset px, opacity, pressed]
   const K = [[0, 0, 0, 0], [350, 0, 1, 0], [550, 0, 1, 1], [1350, -120, 1, 1], [1550, -120, 1, 0], [1750, -120, 1, 0], [1950, -120, 1, 1], [2900, 0, 1, 1], [3100, 0, 1, 0], [3500, 0, 1, 0], [3650, 0, 1, 1], [3800, 0, 1, 0], [4300, 0, 0, 0]];
   const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   let t0 = 0, wasDown = 0;
-  f.hidden = false; hint.hidden = false;
+  f.hidden = false;
   const frame = now => {
     if (stop) return;
     if (!t0) t0 = now;
@@ -3306,7 +3379,7 @@ function dialDemo(){
     f.style.transform = `translateX(${x}px) scale(${down ? .9 : 1})`;
     if (down) track.scrollLeft = start - x;   // the dial moves with the finger
     if (t < K[K.length - 1][0]) requestAnimationFrame(frame);
-    else { f.hidden = true; track.scrollTo({ left: start, behavior: 'smooth' }); setTimeout(() => { hint.hidden = true; }, 600); }
+    else { f.hidden = true; track.scrollTo({ left: start, behavior: 'smooth' }); }
   };
   requestAnimationFrame(frame);
 }
