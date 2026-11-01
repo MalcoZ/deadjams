@@ -144,12 +144,13 @@ body::after{content:"";position:fixed;inset:0;z-index:15;pointer-events:none;opa
 .wordmark svg{display:block;height:56px;width:auto;overflow:visible}
 @media (prefers-reduced-motion: reduce){.bgfx{animation:none}}
 *{box-sizing:border-box}
-html,body{height:100%}
+html{height:100%}
+body{min-height:100%}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:clip}
 body{overflow-x:clip;touch-action:manipulation}
 body{margin:0;background:transparent;color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;
   font-optical-sizing:auto;-webkit-font-smoothing:antialiased;
-  padding-bottom:calc(var(--player-h) + env(safe-area-inset-bottom,0px));}
+  padding-bottom:var(--pbar,calc(var(--player-h) + 18px + env(safe-area-inset-bottom,0px)));}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
@@ -597,6 +598,7 @@ body.trip-open{overflow:hidden}
 .tv-keys{position:absolute;right:4vw;bottom:4vh;margin:0;font-size:clamp(12px,1vw,20px);opacity:.55;transition:opacity 1s}
 .tv-keys.gone{opacity:0}
 @media (max-width:900px){.tv-list{display:none}.tv-now{max-width:88vw}}
+.hdr-search,#topSpacer{display:none}
 .set-credit summary{cursor:pointer;font-weight:650;color:var(--ink)}
 .set-credit ul{margin:8px 0 0;padding-left:18px}
 .set-credit li{margin:0 0 6px}
@@ -708,12 +710,30 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
   .s-date b{font-size:16px;white-space:nowrap}
   .s-meta{grid-column:2;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px}
   .detail-pane{display:none;padding:0 16px 24px}
-  body.viewing .dial,body.viewing .list-pane,body.viewing .tools{display:none}
-  body.viewing .top{position:sticky;top:0;z-index:8;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 6px;background:var(--bg);margin:0}
-  body.viewing .word{font-size:26px}
+  body.viewing .dial,body.viewing .list-pane{display:none}
   body.viewing .layout{padding-top:0}
+  /* Header: a fixed frosted strip from the very top edge. Scrolling shrinks the title and folds the buttons away. */
+  .top{position:fixed;left:0;right:0;top:0;z-index:12;flex-direction:column;align-items:stretch;gap:0;margin:0;
+    padding:calc(8px + env(safe-area-inset-top,0px) + var(--pill,0px)) 14px calc(10px - 4px * var(--shrink,0));
+    background:color-mix(in srgb,var(--bg) calc(55% + 25% * var(--shrink,0)),transparent);
+    -webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);
+    box-shadow:inset 0 -1px 0 rgba(var(--t-hi),calc(.1 * var(--shrink,0)))}
+  html.ios-browser .top{--pill:40px}
+  .brand{display:flex;align-items:center;justify-content:space-between;width:100%;height:calc(46px - 16px * var(--shrink,0));padding:0}
+  .top .home{transform:scale(calc(1 - .4 * var(--shrink,0)));transform-origin:left center}
+  .hdr-search{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(var(--t-hi),.32);background:rgba(var(--t-hi),.08);color:var(--ink);padding:0;
+    opacity:var(--shrink,0);pointer-events:none;transform:scale(calc(.8 + .2 * var(--shrink,0)))}
+  .top.shrunk .hdr-search{pointer-events:auto}
+  .hdr-search svg{width:18px;height:18px}
+  .tools{overflow:hidden;max-height:calc((1 - var(--shrink,0)) * 64px);opacity:calc(1 - var(--shrink,0) * 1.6);margin-top:calc(8px * (1 - var(--shrink,0)))}
+  body.searching .top{--shrink:0!important}
+  body.searching .tools{max-height:none;opacity:1}
+  #topSpacer{display:block;height:var(--hdrFull,150px)}
+  body.viewing #topSpacer{height:var(--hdrMin,70px)}
+  body.viewing .top{--shrink:1!important}
+  .minibar{display:none!important}
   body.viewing .detail-pane{display:block}
-  .back{display:flex;align-items:center;position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:5;width:calc(100% + 32px);margin:0 -16px 10px;padding:10px 16px;
+  .back{display:flex;align-items:center;position:sticky;top:var(--hdrMin,70px);z-index:5;width:calc(100% + 32px);margin:0 -16px 10px;padding:10px 16px;
     background:var(--surface-solid);border-bottom:1px solid var(--line);border-radius:22px 22px 0 0;font-size:16px;color:var(--ink)}
   .d-dow{font-size:13px;margin-bottom:2px}
   .d-date{font-size:30px;letter-spacing:-.035em}
@@ -768,13 +788,14 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
 <header class="top">
   <div class="brand">
  <a href="./" class="home" id="homeLink" aria-label="deadjams, go to the start"><h1 class="word" id="wordmark" aria-label="deadjams">deadjams</h1></a>
+    <button class="hdr-search" id="hdrSearch" aria-label="Search"><svg viewBox="0 0 24 24" class="stroke" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
   </div>
   <div class="tools">
-    <button class="btn songBtn" id="songBtn" type="button"><svg viewBox="0 0 24 24" class="stroke" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span>Songs</span></button>
+    <button class="btn songBtn" id="songBtn" type="button"><svg viewBox="0 0 24 24" class="stroke" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span>Search</span></button>
     <form class="search" id="songForm" role="search">
-      <label class="sr" for="songq">Find a song</label>
+      <label class="sr" for="songq">Search songs, venues, cities, or dates</label>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 1 0 4.2 12.6l5.1 5.1 1.4-1.4-5.1-5.1A7 7 0 0 0 10 3zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/></svg>
-      <input id="songq" type="search" placeholder="Find a song" list="songs" autocomplete="off" enterkeyhint="search">
+      <input id="songq" type="search" placeholder="Songs, venues, cities, dates" list="songs" autocomplete="off" enterkeyhint="search">
       <datalist id="songs"></datalist>
       <button class="btn songCancel" id="songCancel" type="button">Cancel</button>
     </form>
@@ -783,6 +804,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
     <button class="btn" id="libBtn">Library</button>
   </div>
 </header>
+<div id="topSpacer" aria-hidden="true"></div>
 
 <nav class="dial" aria-label="Choose a year"><div class="dial-track" id="dial"></div><p class="dial-hint" id="dialHint" hidden></p>
   <div class="finger" id="finger" hidden aria-hidden="true"><span class="ring"></span>
@@ -1312,7 +1334,7 @@ function renderList(){
   $('#count').textContent = state.partial ? 'loading the rest…' : list.length ? `${list.length} show${list.length === 1 ? '' : 's'}` : '';
   $('#miniCtx').textContent = list.length ? `${state.label} · ${list.length} show${list.length === 1 ? '' : 's'}` : state.label;
   if (!list.length){
-    ul.innerHTML = `<li class="empty-list">${state.shows.length ? 'No shows match that filter. Clear it to see the whole list.' : state.mode === 'song' ? 'No set lists mention that song. Check the spelling, or pick a title from the suggestions.' : 'No recordings found here. Try another year.'}</li>`;
+    ul.innerHTML = `<li class="empty-list">${state.shows.length ? 'No shows match that filter. Clear it to see the whole list.' : state.mode === 'song' ? 'No set lists mention that song. Check the spelling, or pick a title from the suggestions.' : state.mode === 'search' ? 'Nothing matched. Try a song, venue, city, year, or a date like 5/8/77.' : 'No recordings found here. Try another year.'}</li>`;
     return;
   }
   const showYear = state.mode !== 'year';
@@ -1354,7 +1376,7 @@ $('#list').addEventListener('click', e => {
   if (state.mode === 'song'){   // a song search plays that show's version of the song right away
     fetchMeta(g.sources[0].identifier).then(m => {
       if (state.current !== g) return;
-      const i = matchIndex(m); state.queue = { id: m.id, tracks: m.tracks, show: g, index: Math.max(0, i), songRun: i >= 0 };
+      const i = matchIndex(m); state.queue = { id: m.id, tracks: m.tracks, show: g, index: Math.max(0, i) };   // then the rest of that show
       loadTrack(state.queue.index);
     }).catch(() => {});
   }
@@ -1456,7 +1478,7 @@ function openShow(g, sourceId, auto = false){
   state.current = g; state.tab = 'setlist'; state.allReviews = false; state.recOpen = false;
   if (auto){ document.querySelectorAll('.show').forEach(b => b.setAttribute('aria-current', b.dataset.date === g.date)); loadSource(sourceId || g.sources[0].identifier); return; }
   if (mq.matches && !document.body.classList.contains('viewing')){ listScroll = window.scrollY; history.pushState({ tr: 'show' }, ''); nav.show = true; }
-  document.body.classList.add('viewing'); window.relayoutWord && window.relayoutWord();
+  document.body.classList.add('viewing'); applyShrink(); window.relayoutWord && window.relayoutWord();
   document.querySelectorAll('.show').forEach(b => b.setAttribute('aria-current', b.dataset.date === g.date));
   if (matchMedia('(max-width: 900px)').matches) window.scrollTo(0, 0);
   loadSource(sourceId && g.sources.some(s => s.identifier === sourceId) ? sourceId : g.sources[0].identifier);
@@ -1574,7 +1596,7 @@ function renderDetail(){
   $('#back').onclick = closeDetail;
   $('#recs').addEventListener('toggle', e => { state.recOpen = e.target.open; });
   el.querySelectorAll('.rec').forEach(b => b.onclick = () => { if (b.dataset.id !== state.sourceId){ state.recOpen = false; loadSource(b.dataset.id); } });
-  const pm = $('#playMatch'); if (pm) pm.onclick = () => playFrom(matchI, true);
+  const pm = $('#playMatch'); if (pm) pm.onclick = () => playFrom(matchI);
   const an = $('#autoNext'); if (an) an.onchange = () => store.set('autonext', an.checked);
   const pr = $('#mRetry'); if (pr) pr.onclick = () => { metaCache.delete(state.sourceId); loadSource(state.sourceId); };
   $('#playShow').onclick = () => playFrom(0);
@@ -2300,16 +2322,49 @@ $('#sort').addEventListener('change', () => { state.sortAuto = false; });
 const SONGS = ["Alabama Getaway","Althea","Attics of My Life","Bertha","Big River","Bird Song","Black Peter","Black-Throated Wind","Box of Rain","Brokedown Palace","Brown-Eyed Women","Candyman","Casey Jones","Cassidy","China Cat Sunflower","China Doll","Cold Rain and Snow","Comes a Time","Cosmic Charlie","Crazy Fingers","Cumberland Blues","Dancing in the Street","Dark Star","Days Between","Deal","Dear Mr. Fantasy","Dire Wolf","Drums","Estimated Prophet","Eyes of the World","Fire on the Mountain","Foolish Heart","Franklin's Tower","Friend of the Devil","Good Lovin'","Greatest Story Ever Told","Hell in a Bucket","Help on the Way","He's Gone","Here Comes Sunshine","High Time","I Know You Rider","It Must Have Been the Roses","Jack Straw","Jack-A-Roe","Lazy Lightning","Let It Grow","Looks Like Rain","Loser","Lost Sailor","Me and My Uncle","Mississippi Half-Step Uptown Toodeloo","Morning Dew","New Speedway Boogie","Not Fade Away","One More Saturday Night","Playing in the Band","Ramble On Rose","Row Jimmy","Saint of Circumstance","Samson and Delilah","Scarlet Begonias","Shakedown Street","Ship of Fools","Slipknot!","Space","Stagger Lee","St. Stephen","Stella Blue","Sugar Magnolia","Sugaree","Sunshine Daydream","Supplication","Tennessee Jed","Terrapin Station","The Eleven","The Music Never Stopped","The Other One","The Wheel","They Love Each Other","Throwing Stones","Touch of Grey","Truckin'","Uncle John's Band","Viola Lee Blues","Wharf Rat","Weather Report Suite","West L.A. Fadeaway","Women Are Smarter"];
 $('#songs').innerHTML = SONGS.map(t => `<option value="${esc(t)}">`).join('');
 let lastSong = { q: '', t: 0 };
+// One search box for everything: a year, a date, a song, or a venue or city
+function parseShowDate(q){
+  q = q.trim().toLowerCase();
+  let m = q.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if (m) return ymd(+m[1], +m[2], +m[3]);
+  m = q.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2}|\d{4})$/); if (m) return ymd(+m[3] < 100 ? 1900 + +m[3] : +m[3], +m[1], +m[2]);
+  const MON = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  m = q.match(/^([a-z]{3})[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+'?(\d{2}|\d{4})$/); if (m && MON.includes(m[1])) return ymd(+m[3] < 100 ? 1900 + +m[3] : +m[3], MON.indexOf(m[1]) + 1, +m[2]);
+  m = q.match(/^(\d{1,2})\s+([a-z]{3})[a-z]*\.?,?\s+'?(\d{2}|\d{4})$/); if (m && MON.includes(m[2])) return ymd(+m[3] < 100 ? 1900 + +m[3] : +m[3], MON.indexOf(m[2]) + 1, +m[1]);
+  return null;
+}
+function ymd(y, mo, d){ if (y < FIRST || y > LAST || mo < 1 || mo > 12 || d < 1 || d > 31) return null; return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`; }
+async function runSearch(raw){
+  const q = raw.trim(); if (!q) return;
+  document.body.classList.remove('searching'); $('#songq').blur(); applyShrink();
+  let y = q.match(/^'?(\d{2}|\d{4})$/); if (y){ let n = +y[1]; if (n < 100) n += 1900; if (n >= FIRST && n <= LAST) return loadYear(n); }
+  const d = parseShowDate(q);
+  if (d){
+    await loadYear(+d.slice(0, 4));
+    const g = state.shows.find(x => x.date === d);
+    if (g) openShow(g); else toast('No recording of a show on that date.');
+    return;
+  }
+  const nq = norm(q), song = SONGS.find(t => norm(t) === nq) || (nq.length > 3 && SONGS.find(t => norm(t).startsWith(nq)));
+  if (song){ $('#songq').value = song; return searchSong(song); }
+  return searchAny(q);
+}
+async function searchAny(q){
+  if ($('#sotdMobile')) $('#sotdMobile').innerHTML = '';
+  leaveSong(); state.mode = 'search'; state.label = `“${q}”`; markDial();
+  if (document.body.classList.contains('viewing') && mq.matches) closeDetail();
+  const ph = q.replace(/["\\]/g, '');
+  await loadList(() => search(`collection:GratefulDead AND ("${ph}" OR venue:"${ph}" OR coverage:"${ph}")`).then(groupDocs));
+}
 function submitSong(){
   const q = $('#songq').value.trim();
   if (!q || (q === lastSong.q && Date.now() - lastSong.t < 800)) return;
   lastSong = { q, t: Date.now() }; document.body.classList.remove('searching');
   $('#songq').blur();
-  searchSong(q);
+  runSearch(q);
 }
 $('#songForm').addEventListener('submit', e => { e.preventDefault(); submitSong(); });
-$('#songBtn').onclick = () => { document.body.classList.add('searching'); haptic(); setTimeout(() => $('#songq').focus(), 30); };
-$('#songCancel').onclick = () => { document.body.classList.remove('searching'); $('#songq').blur(); };
+$('#songBtn').onclick = () => { document.body.classList.add('searching'); applyShrink(); haptic(); setTimeout(() => $('#songq').focus(), 30); };
+$('#songCancel').onclick = () => { document.body.classList.remove('searching'); $('#songq').blur(); applyShrink(); };
 $('#songq').addEventListener('change', () => { if (SONGS.includes($('#songq').value.trim())) submitSong(); });
 $('#otd').onclick = loadOnThisDay;
 $('#random').onclick = () => randomShow(false);
@@ -2330,7 +2385,7 @@ const nav = { show: false, sheet: false, thenShow: false };
 let listScroll = 0;
 function hideDetail(){
   nav.show = false;
-  document.body.classList.remove('viewing'); window.relayoutWord && window.relayoutWord();
+  document.body.classList.remove('viewing'); applyShrink(); window.relayoutWord && window.relayoutWord();
   requestAnimationFrame(() => { window.scrollTo(0, listScroll); markDial(); });
 }
 function closeDetail(){ if (nav.show) history.back(); else hideDetail(); }
@@ -2434,9 +2489,20 @@ function paletteAt(s){
   return [0, 1, 2, 3].map(j => DF_PALETTES[i][j].map((v, k) => v + (DF_PALETTES[i + 1][j][k] - v) * f));
 }
 const KEYS = ['palette', 'terrain', 'backdrop', 'glow', 'gravity', 'dream', 'flow', 'turb', 'trails', 'ripples'];
+// Each roll picks a character, like Driftfield's presets, then varies it, so rolls feel truly different
+const TRIP_CHARACTERS = [
+  { name: 'Nebula',   terrain: [.03, .22], dream: [.55, .9],  gravity: [.1, .35], trails: [.75, .97], ripples: [.4, .9],  glow: [.5, .9],  flow: [.25, .5], turb: [.2, .5] },
+  { name: 'Marble',   terrain: [.42, .6],  dream: [.05, .35], gravity: [.15, .5], trails: [.5, .8],   ripples: [.1, .4],  glow: [.4, .7],  flow: [.3, .6], turb: [.3, .7] },
+  { name: 'Coral',    terrain: [.82, .97], dream: [0, .25],   gravity: [0, .3],   trails: [.35, .65], ripples: [.05, .3], glow: [.35, .65], flow: [.35, .7], turb: [.5, 1] },
+  { name: 'Vortex',   terrain: [.2, .7],   dream: [.2, .5],   gravity: [.72, .95], trails: [.82, .97], ripples: [.1, .4], glow: [.5, .85], flow: [.4, .7], turb: [.3, .6] },
+  { name: 'Mist',     terrain: [.08, .4],  dream: [.6, .9],   gravity: [.05, .3], trails: [.85, .97], ripples: [.5, .95], glow: [.25, .45], flow: [.2, .4], turb: [.15, .4] },
+  { name: 'Storm',    terrain: [.3, .85],  dream: [0, .3],    gravity: [.3, .6],  trails: [.25, .55], ripples: [.05, .25], glow: [.55, .95], flow: [.55, .85], turb: [.8, 1] },
+  { name: 'Drift',    terrain: [.1, .9],   dream: [0, .9],    gravity: [0, .9],   trails: [.2, .97],  ripples: [.05, .95], glow: [.3, .95], flow: [.25, .9], turb: [.15, 1] }
+];
 function randomTrip(){
-  return { palette: Math.random(), terrain: rand(.05, .95), backdrop: rand(.2, 1), glow: rand(.3, .95), gravity: rand(0, .9),
-    dream: rand(0, .9), flow: rand(.25, .9), turb: rand(.15, 1), trails: rand(.2, .97), ripples: rand(.05, .95),
+  const ch = pick(TRIP_CHARACTERS), r = k => rand(ch[k][0], ch[k][1]);
+  return { character: ch.name, palette: Math.random(), terrain: r('terrain'), backdrop: rand(.2, 1), glow: r('glow'), gravity: r('gravity'),
+    dream: r('dream'), flow: r('flow'), turb: r('turb'), trails: r('trails'), ripples: r('ripples'),
     // how each roll answers the music
     sym: Math.random() < .1 ? pick([3, 4, 5, 6, 8]) : 0, mirror: Math.random() < .05 ? 1 : 0,
     punch: rand(.035, .13), flash: rand(.18, .65), twist: rand(0, 1.5) * (Math.random() < .5 ? -1 : 1),
@@ -2773,8 +2839,8 @@ function tripLoop(now){
   readLevels(dt);
   const L = trip.L, c = trip.cur, cv = $('#tripCv');
   const T = trip.P;
-  const drive = (.1 + L.bass * 5 + L.beat * 4.5 + L.hit * 2.4) * .4;   // 60% slower; the music still sets the pace
-  trip.t += dt * c.speed * (.1 + L.bass * 3 + L.beat * 2.2) * .4;
+  const drive = (.1 + L.bass * 5 + L.beat * 4.5 + L.hit * 2.4) * .25;   // slow and spacious; the music still sets the pace
+  trip.t += dt * c.speed * (.1 + L.bass * 3 + L.beat * 2.2) * .25;
   const step = Math.min(2.5, Math.max(.25, dt * 60)) * c.speed * drive;
   // simulate
   gl.bindFramebuffer(gl.FRAMEBUFFER, simB.fb); gl.viewport(0, 0, simB.w, simB.h);
@@ -3255,12 +3321,13 @@ function buildStomp(wordHost){
   const px = v => v.toFixed(2) + 'px';
   function layout(){
     const M = measure(), b = base.getBoundingClientRect(); if (!b.width) return;
+    const sc = b.width / (base.offsetWidth || b.width) || 1;   // the header may be scaled down
     const fs = parseFloat(getComputedStyle(base).fontSize);
     const len = parseFloat(getComputedStyle(wordHost).getPropertyValue('--foot-length')) || .55;
-    const baseline = probe.getBoundingClientRect().bottom - b.top, W = b.width, H = b.height; let holes = '';
+    const baseline = (probe.getBoundingClientRect().bottom - b.top) / sc, W = b.width / sc, H = b.height / sc; let holes = '';
     layers.forEach(L => {
       const r = document.createRange(); r.setStart(base.firstChild, L.i); r.setEnd(base.firstChild, L.i + 1);
-      const gx = r.getBoundingClientRect().left - b.left;
+      const gx = (r.getBoundingClientRect().left - b.left) / sc;
       const cutY = baseline + (1 - len) * M.depth * fs, groundY = baseline + M.depth * fs;
       const xl = gx + M.inkL * fs - .04 * fs, xr = gx + M.inkR * fs + .04 * fs, pivX = gx + M.stem * fs, ov = .05 * fs;
       L.foot.style.clipPath = 'inset(' + px(cutY - ov) + ' ' + px(W - xr) + ' ' + px(-.5 * fs) + ' ' + px(xl) + ')';
@@ -3291,12 +3358,12 @@ const titleBeat = { avg: .15, last: 0, gaps: [], liveUntil: 0, anims: [] };
 const tbuf = new Uint8Array(1024);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function stomp(ibi){
-  const D = Math.max(.4, Math.min(1.1, ibi / .7)) * 1000, a = mq.matches ? 2.5 : 1.8;   // timed so the slap lands on the next beat; bigger on phones
+  const D = Math.max(.4, Math.min(1.1, ibi / .7)) * 1000, a = mq.matches ? 3.2 : 2.1;   // timed so the slap lands on the next beat; bigger on phones
   const sc = v => 1 + (v - 1) * a;
   titleBeat.anims.forEach(x => x.cancel()); titleBeat.anims = [];
   // on phones the whole word dips a touch as the foot lands, so the beat reads at a glance
   if (mq.matches) document.querySelectorAll('.word').forEach(w => titleBeat.anims.push(w.animate([
-    { transform: 'none', offset: 0 }, { transform: 'translateY(-1px)', offset: .55 }, { transform: 'translateY(2px) scaleY(.96)', offset: .72, easing: 'ease-out' }, { transform: 'none', offset: 1 }
+    { transform: 'none', offset: 0 }, { transform: 'translateY(-1px)', offset: .55 }, { transform: 'translateY(3.5px) scaleY(.92)', offset: .72, easing: 'ease-out' }, { transform: 'none', offset: 1 }
   ], { duration: D })));
   wordLayers.forEach(L => {
     titleBeat.anims.push(
@@ -3359,7 +3426,7 @@ function goHome(){
 $('#homeLink').addEventListener('click', e => { e.preventDefault(); goHome(); haptic(); });
 $('#homeLink2').addEventListener('click', e => { e.preventDefault(); goHome(); haptic(); });
 addEventListener('scroll', () => {
-  const show = mq.matches && !document.body.classList.contains('viewing') && window.scrollY > $('.top').offsetHeight + 30;
+  const show = false;
   const bar = $('#minibar'); if (bar.classList.contains('is-shown') !== show){ bar.classList.toggle('is-shown', show); if (show) window.relayoutWord(); }
 }, { passive: true });
 
@@ -3398,6 +3465,28 @@ function dialDemo(){
 }
 
 if (IOS && !navigator.standalone && !matchMedia('(display-mode: standalone)').matches) document.documentElement.classList.add('ios-browser');
+
+const topEl = $('.top');
+function applyShrink(){
+  if (!mq.matches){ topEl.style.removeProperty('--shrink'); topEl.classList.remove('shrunk'); return; }
+  const p = Math.min(1, Math.max(0, window.scrollY / 90));
+  topEl.style.setProperty('--shrink', p.toFixed(3));
+  topEl.classList.toggle('shrunk', p > .6 || document.body.classList.contains('viewing'));
+}
+function measureHeader(){
+  const r = document.documentElement.style;
+  if (!mq.matches){ r.removeProperty('--hdrFull'); r.removeProperty('--hdrMin'); return; }
+  topEl.style.setProperty('--shrink', '0'); r.setProperty('--hdrFull', topEl.offsetHeight + 'px');
+  topEl.style.setProperty('--shrink', '1'); r.setProperty('--hdrMin', topEl.offsetHeight + 'px');
+  applyShrink();
+}
+// keep the last song row clear of the player bar
+function measurePlayer(){ document.documentElement.style.setProperty('--pbar', ($('#player').offsetHeight + 18) + 'px'); }
+addEventListener('scroll', applyShrink, { passive: true });
+addEventListener('resize', () => { measureHeader(); measurePlayer(); });
+if (document.fonts) document.fonts.ready.then(() => { measureHeader(); measurePlayer(); });
+setTimeout(() => { measureHeader(); measurePlayer(); }, 0);
+$('#hdrSearch').onclick = () => { window.scrollTo({ top: 0 }); document.body.classList.add('searching'); haptic(); setTimeout(() => $('#songq').focus(), 60); };
 
 /* ---------- boot ---------- */
 async function boot(){
