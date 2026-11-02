@@ -251,7 +251,7 @@ body.playing .reel{animation-play-state:running}
 .tag{font-size:12px;font-weight:600;color:var(--accent);border:1px solid currentColor;border-radius:999px;padding:0 7px}
 .rec-meta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .rec-src{font-size:12px;color:var(--muted);opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.trk.match:not(.playing){background:var(--accent-soft);}
+.trk.match:not(.playing){background:transparent}
 .trk .yours{font-size:12px;color:var(--accent);margin-left:8px;font-weight:600;white-space:nowrap}
 #list{list-style:none;margin:0;padding:6px;overflow-y:auto;flex:1}
 .show{width:100%;display:grid;grid-template-columns:62px 1fr auto;gap:12px;align-items:center;text-align:left;
@@ -322,14 +322,15 @@ body.playing .reel{animation-play-state:running}
 .tracks li.set-h + li{border-top:0}
 .trk .t{font-weight:500}
 .trk .len{color:var(--muted);font-variant-numeric:tabular-nums;font-size:14px}
-.trk.playing{background:linear-gradient(90deg,rgba(var(--t-mid),.2),rgba(var(--t-mid),.1))}
+.tracks li:has(.trk.playing){background:linear-gradient(90deg,rgba(var(--t-mid),.2),rgba(var(--t-mid),.1))}
+.tracks li:has(.trk.match:not(.playing)){background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
 .trk.playing .t,.trk.playing .n{color:var(--accent)}
 .eqbars{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
 .eqbars.vol i{animation:none;transition:height .07s linear}
-.eqbars i{width:3px;background:linear-gradient(var(--c3),var(--c1));animation:bounce .9s ease-in-out infinite}
+.eqbars i{width:3px;background:linear-gradient(var(--c3),var(--c1));animation:bounce 1.6s ease-in-out infinite}
 .eqbars i:nth-child(2){animation-delay:-.3s}.eqbars i:nth-child(3){animation-delay:-.6s}
 .paused .eqbars i{animation-play-state:paused}
-@keyframes bounce{0%,100%{height:3px}50%{height:12px}}
+@keyframes bounce{0%,100%{height:4px}50%{height:8px}}
 @media (prefers-reduced-motion: reduce){.eqbars i{animation:none;height:8px}}
 .total{color:var(--muted);font-size:14px;margin:10px 8px 0}
 .notes{white-space:pre-line;max-width:72ch;line-height:1.6;margin:0}
@@ -571,6 +572,7 @@ body.trip-open{overflow:hidden}
 .seg button[aria-pressed="true"]{background:var(--hot);color:var(--accent-ink);border-color:transparent}
 .set-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;padding:13px 14px;margin-bottom:8px;border-radius:16px;
   border:1px solid var(--line);background:var(--surface2);color:var(--ink);font-weight:650;font-size:15px;cursor:pointer}
+.set-row[hidden]{display:none}
 .set-row small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
 .set-row b{color:var(--accent);font-size:14px;white-space:nowrap}
 .set-row input{width:22px;height:22px;accent-color:var(--accent);flex:0 0 auto}
@@ -635,6 +637,17 @@ body.trip-open{overflow:hidden}
   .list-pane{top:calc(var(--hdrMin,64px) + 12px);max-height:calc(100vh - var(--player-h) - var(--hdrMin,64px) - 36px)}
 }
 .top::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:100vh;background:var(--bg);pointer-events:none}
+.loved-m{display:none}
+@media (max-width:900px){
+  .loved-m{display:block;padding:4px 0 6px}
+  .loved-m[hidden]{display:none}
+  body.viewing .loved-m{display:none}
+  .loved-m .loved-top{padding:0 14px;margin:0 0 8px}
+  .loved-m .loved-h{font-size:18px}
+  .loved-m .loved{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 14px 6px;scrollbar-width:none}
+  .loved-m .loved::-webkit-scrollbar{display:none}
+  .loved-m .lv{flex:0 0 78%;scroll-snap-align:start}
+}
 .set-credit summary{cursor:pointer;font-weight:650;color:var(--ink)}
 .set-credit ul{margin:8px 0 0;padding-left:18px}
 .set-credit li{margin:0 0 6px}
@@ -844,6 +857,7 @@ body.sheet-open .toast{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px))
 </header>
 <div id="topSpacer" aria-hidden="true"></div>
 
+<section class="loved-m" id="lovedM" aria-label="Suggested shows" hidden></section>
 <nav class="dial" aria-label="Choose a year"><div class="dial-track" id="dial"></div><p class="dial-hint" id="dialHint" hidden></p>
   <div class="finger" id="finger" hidden aria-hidden="true"><span class="ring"></span>
     <svg viewBox="0 0 48 60"><path d="M19 30V9a4.5 4.5 0 0 1 9 0v15l9.2 2.3a5 5 0 0 1 3.7 5.7l-2.1 12.6A9 9 0 0 1 29.9 52H22a9 9 0 0 1-7.4-3.9L7.8 38.3a4.4 4.4 0 0 1 6.9-5.4L19 37z"/></svg></div></nav>
@@ -1561,6 +1575,7 @@ function pickLoved(){
   for (let i = pool.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
   loved = pool.slice(0, 6).map(g => ({ g, why: null }));
   if (!state.current) renderDetail();
+  fillLovedMobile();
   // what listeners say about each one: a short line from its most helpful review
   loved.forEach(item => fetchMeta(item.g.sources[0].identifier).then(m => {
     const ranked = (m.reviews || []).slice().sort((a, b) => ((+b.stars || 0) * 2 + Math.min(String(b.reviewbody || '').length, 1500) / 300) - ((+a.stars || 0) * 2 + Math.min(String(a.reviewbody || '').length, 1500) / 300));
@@ -1569,8 +1584,14 @@ function pickLoved(){
       if (sn){ item.why = { text: sn, who: r.reviewer || 'A listener' }; break; }
     }
     const el = document.querySelector(`[data-loved="${item.g.date}"] .lv-w`);
-    if (el && item.why) el.innerHTML = `“${esc(item.why.text)}” <span class="lv-who">${esc(item.why.who)}</span>`;
+    document.querySelectorAll(`[data-loved="${item.g.date}"] .lv-w`).forEach(w => { if (item.why) w.innerHTML = `“${esc(item.why.text)}” <span class="lv-who">${esc(item.why.who)}</span>`; });
   }).catch(() => {}));
+}
+function fillLovedMobile(){
+  const el = $('#lovedM'); if (!el) return;
+  if (!loved.length){ el.hidden = true; return; }
+  el.innerHTML = lovedHTML().replace('<div class="loved-top">', '<div class="loved-top">').replace(/id="lovedMore"/, 'id="lovedMoreM"');
+  el.hidden = false;
 }
 function lovedHTML(){
   const head = `<div class="loved-top"><h2 class="loved-h">From the top 50</h2>${loved.length ? '<button class="btn" id="lovedMore">Show others</button>' : ''}</div>`;
@@ -1583,7 +1604,7 @@ function lovedHTML(){
       <span class="lv-w">${why ? `“${esc(why.text)}” <span class="lv-who">${esc(why.who)}</span>` : ''}</span></button>`).join('')}</div>`;
 }
 document.addEventListener('click', async e => {
-  if (e.target.closest('#lovedMore')){ pickLoved(); haptic(); return; }
+  if (e.target.closest('#lovedMore, #lovedMoreM')){ pickLoved(); haptic(); return; }
   const b = e.target.closest('[data-loved]'); if (!b) return;
   const item = loved.find(x => x.g.date === b.dataset.loved); if (!item) return;
   const g = item.g;
@@ -1850,7 +1871,8 @@ audio = createAudio(true);
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const eqActive = () => eq.on && eq.gains.some(g => Math.abs(g) > .01);
 // iOS pauses processed audio when the screen locks, so on iPhone the music only goes through the EQ while it's in use
-const wantRouted = () => corsMode && eqAvailable && !state.car && !state.remote && !state.casting && (!IOS || eqActive() || tripIsOpen());
+// iPhone: the EQ path breaks car, Bluetooth, and AirPlay playback (and can warp speed), so only Trip out uses it, and only while open
+const wantRouted = () => corsMode && eqAvailable && !state.car && !state.remote && !state.casting && (IOS ? tripIsOpen() : true);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && ctx && ctx.state !== 'running') ctx.resume(); });
 let pendingSwap = false, pendingUnroute = false, outEl = null;
 function tripIsOpen(){ try { return trip.open; } catch { return false; } }
@@ -1940,6 +1962,7 @@ function syncTwin(){
     twin.el = new Audio(); twin.el.crossOrigin = 'anonymous'; twin.el.preload = 'auto';
     const src = ctx.createMediaElementSource(twin.el); twin.an = ctx.createAnalyser(); twin.an.fftSize = 2048; twin.an.smoothingTimeConstant = .8;
     const mute = ctx.createGain(); mute.gain.value = 0; src.connect(twin.an); twin.an.connect(mute); mute.connect(ctx.destination);
+    twin.beat = ctx.createAnalyser(); twin.beat.fftSize = 1024; twin.beat.smoothingTimeConstant = 0; src.connect(twin.beat);
   }
   const url = state.queue.tracks[state.queue.index].url;
   if (twin.el.src !== url) twin.el.src = url;
@@ -1949,6 +1972,11 @@ function syncTwin(){
 }
 setInterval(syncTwin, 1500);
 // Which analyser is listening right now: the page's own sound, or the silent copy while a speaker plays
+function getBeatAn(){
+  if (graph && audio.routed && !audio.paused && !state.remote && !state.casting) return graph.beat;
+  if (twin.el && twin.beat && !twin.el.paused) return twin.beat;
+  return null;
+}
 function getAn(){
   if (graph && audio.routed && !audio.paused && !state.remote && !state.casting) return graph.an;
   if (twin.el && twin.an && !twin.el.paused) return twin.an;
@@ -1965,13 +1993,14 @@ function ensureCtx(){
     filters[filters.length - 1].connect(pre); pre.connect(an);
     // On iPhone, send the processed sound out through a regular audio player. iOS treats that as music playback,
     // which is allowed to keep going with the screen locked, instead of pausing the page's audio engine.
-    if (IOS && ctx.createMediaStreamDestination){
+    if (false && IOS && ctx.createMediaStreamDestination){
       const dest = ctx.createMediaStreamDestination(); an.connect(dest);
       outEl = document.createElement('audio'); outEl.setAttribute('playsinline', ''); outEl.srcObject = dest.stream;
       outEl.play().catch(() => {});
       try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
     } else an.connect(ctx.destination);
-    graph = { filters, pre, an, input: filters[0] };
+    const beat = ctx.createAnalyser(); beat.fftSize = 1024; beat.smoothingTimeConstant = 0; pre.connect(beat);   // no smoothing: kicks show up immediately
+    graph = { filters, pre, an, beat, input: filters[0] };
     applyEq();
     return true;
   } catch (e) { console.warn('EQ unavailable', e); eqAvailable = false; renderEqNote(); return false; }
@@ -2000,7 +2029,7 @@ function ensureGraph(){
   const canSwap = !IOS || !navigator.userActivation || navigator.userActivation.isActive;
   if (!wantRouted()){
     if (audio.routed){
-      if (!audio.paused && !state.remote && !state.casting) pendingUnroute = true;
+      if (!audio.paused && !state.remote && !state.casting && !IOS) pendingUnroute = true;
       else if (canSwap) swapAudio(false); else pendingSwap = true;
     }
     if (ctx && ctx.state === 'suspended') ctx.resume();
@@ -2311,6 +2340,7 @@ function buildEq(){
 function saveEq(){ store.set('eq', eq); applyEq(); if (state.queue) ensureGraph(); const v = $('#setEqVal'); if (v) v.textContent = !eq.on ? 'Off' : eq.gains.every(g => !g) ? 'Flat' : eq.preset; }
 function toggleEq(force){ if (force === false) closeEqFull(); else openEqFull(); }
 function renderEqNote(){
+  if (IOS){ const r = $('#setEq'); if (r) r.hidden = true; return; }
   if (typeof syncTrip === 'function') syncTrip();
   $('#eqNote').textContent = eqAvailable
     ? 'Drag a band to shape the sound. Settings are saved on this device.'
@@ -2341,7 +2371,7 @@ function drawSpectrum(){
       const f0 = 30 * Math.pow(16000 / 30, i / bars), f1 = 30 * Math.pow(16000 / 30, (i + 1) / bars);
       const a = Math.floor(f0 / nyq * data.length), b = Math.max(a + 1, Math.floor(f1 / nyq * data.length));
       let m = 0; for (let k = a; k < b; k++) m = Math.max(m, data[k]);
-      const bh = Math.max(4 * devicePixelRatio, (m / 255) * h * .92);
+      const bh = Math.max(4 * devicePixelRatio, (m / 255) * h * (mq.matches ? .55 : .92));
       const x = i * (bw + gap) + gap / 2;
       c2.beginPath(); c2.roundRect ? c2.roundRect(x, h - bh, bw, bh, Math.min(bw / 2, 8 * devicePixelRatio)) : c2.rect(x, h - bh, bw, bh); c2.fill();
       peaks[i] = Math.max(peaks[i] - h * .006, h - bh);   // a falling peak marker on each bar
@@ -3008,10 +3038,11 @@ async function openTrip(){
 }
 function closeTrip(){
   if (!trip.open) return;
+  if (IOS && graph && audio.routed){ try { const g = graph.pre.gain; g.cancelScheduledValues(ctx.currentTime); g.setTargetAtTime(0, ctx.currentTime, .025); } catch {} }
   if (trip.tv){ trip.tv = false; if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); setTimeout(() => $('#trip').classList.remove('tv'), 330); }
   trip.open = false;
   setTimeout(() => { if (!trip.open) cancelAnimationFrame(trip.raf); }, 320);   // keep drawing while it fades
-  if (state.queue) ensureGraph();
+  if (state.queue){ if (IOS && audio.routed) setTimeout(() => { if (!trip.open) ensureGraph(); }, 90); else ensureGraph(); }
   const el = $('#trip'); el.classList.add('closing');
   setTimeout(() => { if (!trip.open){ el.hidden = true; el.classList.remove('closing'); } }, 320);
   document.body.classList.remove('trip-open');
@@ -3437,11 +3468,11 @@ const S_SQ = [[1, 1], [1.03, .96], [.96, 1.05], [.97, 1.04], [1.1, .86], [.97, 1
 const S_BS = [[1, 1], [1, .98], [1, 1.015], [1, 1.012], [1.02, .96], [1, 1.01], [1, 1], [1, 1]];
 const S_BR = [0, 0, -.8, -.7, .2, 0, 0, 0];
 const titleBeat = { avg: .15, last: 0, gaps: [], liveUntil: 0, anims: [] };
-const tbuf = new Uint8Array(1024);
+const tbuf = new Uint8Array(1024), bbuf = new Uint8Array(512);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-function stomp(ibi){
+function stomp(slapIn){
   const shrunkBoost = mq.matches && topEl.classList.contains('shrunk') ? 1.35 : 1;
-  const D = Math.max(.4, Math.min(1.1, ibi / .7)) * 1000, a = (mq.matches ? 3.2 : 2.1) * shrunkBoost;   // timed so the slap lands on the next beat; bigger on phones
+  const D = Math.max(.25, Math.min(1.1, slapIn / .7)) * 1000, a = (mq.matches ? 3.2 : 2.1) * shrunkBoost;   // timed so the slap lands on the next beat; bigger on phones
   const sc = v => 1 + (v - 1) * a;
   titleBeat.anims.forEach(x => x.cancel()); titleBeat.anims = [];
   // on phones the whole word dips a touch as the foot lands, so the beat reads at a glance
@@ -3469,25 +3500,29 @@ function titleLoop(now){
     barsEl.forEach(el => { el.classList.add('vol'); [...el.children].forEach((bar, k) => { bar.style.height = (2 + Math.min(1, lvl[k] * [1.4, 1.9, 2.8][k]) * 11).toFixed(1) + 'px'; }); });
   }
   if (reduceMotion) return;
-  const hz = ctx.sampleRate / 2 / tbuf.length, lo = Math.max(1, Math.floor(30 / hz)), hi = Math.ceil(150 / hz);
-  let sum = 0; for (let k = lo; k <= hi; k++) sum += tbuf[k];
-  const b = sum / ((hi - lo + 1) * 255), t = now / 1000;
-  titleBeat.avg = titleBeat.avg * .95 + b * .05;
+  // kick detection runs on the unsmoothed analyser, then each tap is aimed so the foot lands on the predicted beat
+  const ba = getBeatAn(); if (!ba) return;
+  ba.getByteFrequencyData(bbuf);
+  const hz = ctx.sampleRate / 2 / bbuf.length, lo = Math.max(1, Math.floor(35 / hz)), hi = Math.ceil(140 / hz);
+  let sum = 0; for (let k = lo; k <= hi; k++) sum += bbuf[k];
+  const LAT = .03;                                   // analysis delay, seconds
+  const b = sum / ((hi - lo + 1) * 255), t = now / 1000 - LAT;
   const tb = titleBeat;
-  if (b > tb.avg * 1.2 + .035 && b > .22 && t - tb.last > .28){
+  tb.avg = tb.avg * .94 + b * .06;
+  if (b > tb.avg * 1.32 + .04 && b > .2 && t - tb.last > .27){
     const gap = t - tb.last;
     if (gap < 1.6){ tb.gaps.push(gap); if (tb.gaps.length > 8) tb.gaps.shift(); }
     tb.last = t;
     const sorted = tb.gaps.slice().sort((x, y) => x - y);
-    let ibi = sorted.length >= 3 ? sorted[sorted.length >> 1] : .536;   // 112 bpm until the tempo is known
+    let ibi = sorted.length >= 2 ? sorted[sorted.length >> 1] : (tb.ibi || .536);   // tempo locks after two kicks
     while (ibi > .75) ibi /= 2;      // kicks often land on 1 and 3: tap the quarter notes in between too
     while (ibi < .33) ibi *= 2;
     tb.ibi = ibi;
     setWordLive(true); tb.liveUntil = now + 2500;
-    if (t - (tb.lastStomp || 0) > ibi * .5){ stomp(ibi); tb.lastStomp = t; }
-    tb.next = t + ibi;               // re-lock the beat clock to this kick
-  } else if (tb.ibi && t < tb.last + 2.5 && t >= (tb.next || Infinity)){
-    stomp(tb.ibi); tb.lastStomp = t; tb.next += tb.ibi;   // keep tapping quarter notes between kicks
+    tb.next = t + ibi;               // the next beat, predicted
+    if (t - (tb.lastStomp || 0) > ibi * .5){ stomp(tb.next - now / 1000); tb.lastStomp = t; }
+  } else if (tb.ibi && t < tb.last + 2.5 && t >= (tb.next || Infinity) - .02){
+    tb.next += tb.ibi; stomp(tb.next - now / 1000); tb.lastStomp = t;   // keep tapping on the beat between kicks
   } else if (now > tb.liveUntil) setWordLive(false);
 }
 requestAnimationFrame(titleLoop);
