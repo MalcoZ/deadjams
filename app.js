@@ -1,5 +1,5 @@
 /* deadjams app, version 2026.11.2 */
-const APP_VERSION = '2026.11.2';
+const APP_VERSION = '2026.11.3';
 (() => {
 'use strict';
 const API = 'https://archive.org';
@@ -393,8 +393,6 @@ function renderLibrary(ul){
   const f = favs(), saved = Object.values(f.shows).sort((a, b) => b.at - a.at), hist = store.get('history', []);
   const sec = (t, body) => `<li class="sec-h">${t}</li>${body}`;
   let html = '';
-  const un = upnext();
-  if (un.length) html += `<li class="sec-h">Up next <button class="linkbtn" id="clearUpNext">Clear</button></li>` + un.map((x, i) => `<li class="qrow"><button class="fsong" data-un="${i}"><b>${esc(x.type === 'show' ? x.g.venue : x.title)}</b><small>${x.type === 'show' ? 'Whole show · ' : ''}${esc(fmtShort(x.g.date))} ${x.g.date.slice(0, 4)}${x.type === 'song' ? ', ' + esc(x.g.venue) : ''}</small><span>Play</span></button><button class="heart" data-unx="${i}" aria-label="Remove from Up next"><svg viewBox="0 0 24 24" class="stroke"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>`).join('');
   html += sec('Saved shows', saved.length ? saved.map(g => `<li>${itemHTML(g, true).replace(/^<li>|<\/li>$/g, '')}</li>`).join('') : '<li class="empty-list">Tap Save show on any show to keep it here.</li>');
   html += sec('Saved songs', f.songs.length ? f.songs.map((x, i) => `<li><button class="fsong" data-fs="${i}"><b>${esc(x.title)}</b><small>${esc(fmtShort(x.g.date))} ${x.g.date.slice(0, 4)}, ${esc(x.g.venue)}</small><span>Play</span></button></li>`).join('') : '<li class="empty-list">Tap the heart next to a song to save that version.</li>');
   html += sec('Recently played', hist.length ? hist.map(g => `<li>${itemHTML(g, true).replace(/^<li>|<\/li>$/g, '')}</li>`).join('') : '<li class="empty-list">Shows you play will show up here.</li>');
@@ -405,9 +403,6 @@ const warmShow = e => { const b = e.target.closest && e.target.closest('.show');
 $('#list').addEventListener('pointerover', warmShow);
 $('#list').addEventListener('touchstart', warmShow, { passive: true });
 $('#list').addEventListener('click', e => {
-  if (e.target.closest('#clearUpNext')){ store.set('upnext', []); renderList(); return; }
-  const ux = e.target.closest('[data-unx]'); if (ux){ const u = upnext(); u.splice(+ux.dataset.unx, 1); store.set('upnext', u); renderList(); return; }
-  const un = e.target.closest('[data-un]'); if (un){ const u = upnext(); const [it] = u.splice(+un.dataset.un, 1); u.unshift(it); store.set('upnext', u); playUpNext(); return; }
   const fs = e.target.closest('.fsong'); if (fs){ playSavedSong(favs().songs[+fs.dataset.fs]); return; }
   const b = e.target.closest('.show'); if (!b) return;
   const g = state.shows.find(x => keyOf(x) === b.dataset.date);
@@ -616,7 +611,6 @@ function renderDetail(){
       ${matchI >= 0 ? `<button class="btn primary" id="playMatch">Play ${esc(m.tracks[matchI].title.replace(/\s*-*>\s*$/, ''))}</button>` : ''}
       <button class="btn${matchI >= 0 ? '' : ' primary'}" id="playShow" ${m && m.tracks.length ? '' : 'disabled'}>${playingThis ? 'Restart show' : 'Play show'}</button>
       ${src.reviews ? `<span class="rating">${starHTML(src.rating)}<span class="rnum">${src.rating.toFixed(1)}</span><span class="muted">${src.reviews} review${src.reviews === 1 ? '' : 's'} of this tape</span></span>` : '<span class="muted">No reviews of this tape yet</span>'}
-      <button class="btn heartbtn" id="queueShow" aria-label="Add this show to Up next"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 6v12M6 12h12"/></svg><span>Up next</span></button>
       <button class="btn heartbtn" id="shareShow" aria-label="Share this show"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M6 12v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6"/></svg><span>Share</span></button>
       <button class="btn heartbtn" id="favShow" aria-pressed="${isFavShow(keyOf(g))}"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span>${isFavShow(keyOf(g)) ? 'Saved' : 'Save show'}</span></button>
       <a class="link" href="https://archive.org/details/${encodeURIComponent(state.sourceId)}" target="_blank" rel="noopener">Open on archive.org</a>
@@ -644,9 +638,7 @@ function renderDetail(){
   });
   const more = $('#moreRev'); if (more) more.onclick = () => { state.allReviews = true; renderDetail(); };
   $('#favShow').onclick = () => { toggleFavShow(g); haptic(); renderDetail(); };
-  $('#queueShow').onclick = () => addUpNext({ type: 'show', g: gmin(g), id: state.sourceId });
   $('#shareShow').onclick = () => shareShow(g);
-  el.querySelectorAll('.qadd').forEach(b => b.onclick = e => { e.stopPropagation(); if (m){ const i = +b.dataset.qi; addUpNext({ type: 'song', g: gmin(g), id: m.id, index: i, title: m.tracks[i].title }); } });
   el.querySelectorAll('.heart[data-fi]').forEach(b => b.onclick = e => { e.stopPropagation(); if (m){ toggleFavSong(g, m, +b.dataset.fi); haptic(); b.setAttribute('aria-pressed', isFavSong(m.id, +b.dataset.fi)); } });
 }
 // Read set breaks and segues: "->" at the end of a title, and Set 1 / Set 2 / Encore headings in the notes
@@ -694,7 +686,7 @@ function tabBody(m, playingThis){
       const suite = i > 0 && m.tracks[i - 1].segue;
       return `${head}<li><button class="trk${on ? ' playing' + paused : ''}${i === mi ? ' match' : ''}${suite ? ' suite' : ''}" data-i="${i}" aria-label="Play ${esc(t.title)}">
         <span class="n">${on && state.started && !audio.paused ? '<span class="eqbars" aria-hidden="true"><i></i><i></i><i></i></span>' : i + 1}</span>
-        <span class="t">${esc(t.title)}${t.segue ? '<span class="seg-arrow" aria-label="segues into the next song">→</span>' : ''}${i === mi ? '<span class="yours">Your song</span>' : ''}</span><span class="len">${t.len ? clock(t.len) : ''}</span></button><button class="heart qadd" data-qi="${i}" aria-label="Add ${esc(t.title)} to Up next"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 6v12M6 12h12"/></svg></button><button class="heart" data-fi="${i}" aria-pressed="${isFavSong(m.id, i)}" aria-label="Save this version of ${esc(t.title)}"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></button></li>`;
+        <span class="t">${esc(t.title)}${t.segue ? '<span class="seg-arrow" aria-label="segues into the next song">→</span>' : ''}${i === mi ? '<span class="yours">Your song</span>' : ''}</span><span class="len">${t.len ? clock(t.len) : ''}</span></button><button class="heart" data-fi="${i}" aria-pressed="${isFavSong(m.id, i)}" aria-label="Save this version of ${esc(t.title)}"><svg viewBox="0 0 24 24" class="stroke"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></button></li>`;
     }).join('')}</ol>${total ? `<p class="total">${m.tracks.length} tracks, ${clock(total)} total</p>` : ''}`;
   }
   if (state.tab === 'notes'){
@@ -791,19 +783,6 @@ function addHistory(q){
 }
 
 /* ---------- random ---------- */
-async function randomShow(play){
-  const y = FIRST + 1 + Math.floor(Math.random() * (LAST - FIRST));
-  await loadYear(y);
-  const pool = state.shows.filter(g => g.reviews > 0);
-  const list = pool.length ? pool : state.shows;
-  if (!list.length) return;
-  const g = list[Math.floor(Math.random() * list.length)];
-  openShow(g);
-  if (play){
-    const wait = setInterval(() => { if (state.meta || state.metaError){ clearInterval(wait); if (state.meta) playFrom(0); } }, 150);
-    setTimeout(() => clearInterval(wait), 20000);
-  }
-}
 
 /* ---------- audio + EQ ---------- */
 const BANDS = [
@@ -1114,27 +1093,13 @@ function togglePlay(){
 }
 function skip(sec){ if (!state.queue) return;
   if (state.casting && remotePlayer){ remotePlayer.currentTime = Math.max(0, remotePlayer.currentTime + sec); remoteCtl.seek(); haptic(); return; } audio.currentTime = Math.max(0, Math.min((audio.duration || 0) - .5, audio.currentTime + sec)); haptic(); }
-// Up next: songs and shows you've lined up play before the current show carries on
-const upnext = () => store.get('upnext', []);
-function addUpNext(item){ const u = upnext(); u.push({ ...item, at: Date.now() }); store.set('upnext', u); toast(item.type === 'show' ? 'Show added to Up next' : `${item.title} added to Up next`); haptic(); if (state.mode === 'library') renderList(); }
-async function playUpNext(){
-  const u = upnext(); const item = u.shift(); store.set('upnext', u); if (!item) return false;
-  try {
-    const id = item.id || item.g.sources[0].identifier, m = await fetchMeta(id);
-    state.queue = { id: m.id, tracks: m.tracks, show: item.g, index: item.type === 'song' ? Math.min(item.index, m.tracks.length - 1) : 0 };
-    loadTrack(state.queue.index);
-  } catch { toast("That one didn't load. Skipping ahead."); return playUpNext(); }
-  if (state.mode === 'library') renderList();
-  return true;
-}
-function next(){ if (upnext().length){ playUpNext(); return; } const q = state.queue; if (q && q.index < q.tracks.length - 1) loadTrack(q.index + 1); }
+function next(){ const q = state.queue; if (q && q.index < q.tracks.length - 1) loadTrack(q.index + 1); }
 function prev(){ const q = state.queue; if (!q) return;
   if (state.casting && remotePlayer){ if (remotePlayer.currentTime > 4 || q.index === 0){ remotePlayer.currentTime = 0; remoteCtl.seek(); } else loadTrack(q.index - 1); return; }
   if (audio.currentTime > 4 || q.index === 0) audio.currentTime = 0; else loadTrack(q.index - 1); }
 
 function onEnded(){
   const q = state.queue; if (!q) return;
-  if (upnext().length){ playUpNext(); return; }
   if (q.songRun) return continueToNextShow(true);
   if (q.index < q.tracks.length - 1) loadTrack(q.index + 1); else continueToNextShow(false);
 }
@@ -1459,7 +1424,19 @@ $('#songBtn').onclick = () => { document.body.classList.add('searching'); applyS
 $('#songCancel').onclick = () => { document.body.classList.remove('searching'); $('#songq').blur(); applyShrink(); };
 $('#songq').addEventListener('change', () => { if (SONGS.includes($('#songq').value.trim())) submitSong(); });
 $('#otd').onclick = loadOnThisDay;
-$('#random').onclick = () => randomShow(false);
+// Top 50: the best-loved shows as a list, sorted by rating
+async function openTop50(){
+  if (!top50) await loadTop50();
+  if ($('#sotdMobile')) $('#sotdMobile').innerHTML = '';
+  leaveSong(); state.mode = 'top50'; state.label = 'Top 50';
+  state.shows = (top50 || []).map(g => ({ ...g })); state.loading = false; state.partial = false; state.error = null;
+  state.sort = 'rating'; $('#sort').value = 'rating';
+  markDial(); renderList(); haptic();
+  if (document.body.classList.contains('viewing') && mq.matches) closeDetail();
+  window.scrollTo({ top: 0 });
+  track('top50_list');
+}
+$('#top50Btn').onclick = () => openTop50();
 document.addEventListener('keydown', e => {
   if (e.target.closest('input, select, textarea') && e.target.type !== 'range') return;
   if (e.key === ' ' && !e.target.closest('button')){ e.preventDefault(); togglePlay(); }
@@ -2476,8 +2453,6 @@ $('#homeLink').addEventListener('click', e => { e.preventDefault(); goHome(); ha
 
 // First visits: a finger presses the dial, drags it one way and back (the dial follows), then taps a year
 function dialDemo(){
-  const n = store.get('dialHints2', 0); if (n >= 3) return;
-  store.set('dialHints2', n + 1);
   const track = $('#dial'), f = $('#finger');
   if (reduceMotion) return;
   let stop = false;
@@ -2542,7 +2517,6 @@ const wrap = (fn, before) => function(...a){ try { before.apply(this, a); } catc
 loadYear = wrap(loadYear, y => { if (window.djReady) track('select_year', { year: y }); });   // not the year the app opens on
 loadOnThisDay = wrap(loadOnThisDay, () => track('on_this_day'));
 openLibrary = wrap(openLibrary, () => track('open_library'));
-randomShow = wrap(randomShow, () => track('random_show'));
 openShow = wrap(openShow, (g, id, auto) => { if (!auto) track('open_show', { ...showParams(g), from: state.mode }); });
 loadTrack = wrap(loadTrack, i => { const q = state.queue; if (q && q.tracks[i]) track('play_song', { song: q.tracks[i].title, track_number: i + 1, ...showParams(q.show), recording: q.id, from: state.mode, output: state.casting ? 'cast' : state.remote ? 'airplay' : 'device' }); });
 onEnded = wrap(onEnded, () => { const q = state.queue; if (q) track('song_complete', { song: q.tracks[q.index].title, ...showParams(q.show) }); });

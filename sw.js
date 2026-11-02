@@ -1,7 +1,7 @@
 // deadjams service worker: keeps the app itself available offline and opening instantly.
 // Music, set lists, and photos always come straight from the network (never cached here).
-const CACHE = 'deadjams-2026.11.2';
-const SHELL = ['./', './index.html', './app.css?v=2026.11.2', './app.js?v=2026.11.2', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = 'deadjams-2026.11.3';
+const SHELL = ['./', './index.html', './app.css?v=2026.11.3', './app.js?v=2026.11.3', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
