@@ -84,11 +84,12 @@ window.DJ_GA_ID = 'G-R6JJM00ZHP';
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@800;900&family=Fraunces:opsz,wght,SOFT,WONK@9..144,800,100,1&family=Schibsted+Grotesk:wght@400..900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=2026.11.3">
+<link rel="stylesheet" href="app.css?v=2026.11.5">
 </head>
 <body>
 
 <div class="bgfx" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
 <header class="top">
   <div class="brand">
  <a href="./" class="home" id="homeLink" aria-label="deadjams, go to the start"><h1 class="word" id="wordmark" aria-label="deadjams">deadjams</h1></a>
@@ -108,6 +109,7 @@ window.DJ_GA_ID = 'G-R6JJM00ZHP';
     <button class="btn" id="libBtn">Library</button>
   </div>
 </header>
+<div id="page">
 <div id="topSpacer" aria-hidden="true"></div>
 
 <section class="loved-m" id="lovedM" aria-label="Suggested shows" hidden></section>
@@ -135,6 +137,7 @@ window.DJ_GA_ID = 'G-R6JJM00ZHP';
   </section>
   <section class="pane detail-pane" id="detail" aria-live="polite"></section>
 </main>
+</div>
 
 <footer class="player" id="player">
   <div class="mini-prog" aria-hidden="true"><i id="miniProg"></i></div>
@@ -243,7 +246,7 @@ window.DJ_GA_ID = 'G-R6JJM00ZHP';
       <h3>Saved data</h3>
       <button class="set-row" id="setClear"><span>Clear saved shows<small>Lists and set lists kept on this device for faster loading</small></span><b>Clear</b></button>
     </div>
-    <p class="set-credit set-version" id="appVersion">deadjams 2026.11.3</p>
+    <p class="set-credit set-version" id="appVersion">deadjams 2026.11.5</p>
     <p class="set-credit">Recordings, set lists, ratings, and notes come from the Internet Archive's Grateful Dead collection.</p>
     <details class="set-credit"><summary>Trip out photo credits</summary><p>Public domain and Creative Commons photos from Wikimedia Commons, tinted and blended into the visuals.</p><ul id="photoCredits"></ul></details>
   </section>
@@ -264,6 +267,6 @@ window.DJ_GA_ID = 'G-R6JJM00ZHP';
 
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script src="app.js?v=2026.11.3"></script>
+<script src="app.js?v=2026.11.5"></script>
 </body>
 </html>

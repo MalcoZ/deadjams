@@ -1,5 +1,9 @@
 /* deadjams app, version 2026.11.2 */
-const APP_VERSION = '2026.11.3';
+const APP_VERSION = '2026.11.5';
+// Page scrolling goes through these, since iPhone browsers scroll an inner frame instead of the window
+const innerScroll = () => document.documentElement.classList.contains('inner-scroll');
+const getY = () => innerScroll() ? document.getElementById('page').scrollTop : window.scrollY;
+function setY(y, smooth){ const o = { top: y, behavior: smooth ? 'smooth' : 'auto' }; if (innerScroll()) document.getElementById('page').scrollTo(o); else window.scrollTo(o); }
 (() => {
 'use strict';
 const API = 'https://archive.org';
@@ -444,7 +448,7 @@ function pumpVersions(){
     if (state.song !== job.song) return;
     const i = matchIndex(m); state.verLen[keyOf(job.g)] = i >= 0 ? m.tracks[i].len : 0;
     if (i < 0 && m.tracks.length){ state.noMatch = state.noMatch || {}; state.noMatch[keyOf(job.g)] = true; }   // not actually in this set list
-    clearTimeout(verRender); verRender = setTimeout(() => { if (state.mode === 'song') { const y = window.scrollY; renderList(); window.scrollTo(0, y); } }, 600);
+    clearTimeout(verRender); verRender = setTimeout(() => { if (state.mode === 'song') { const y = getY(); renderList(); setY(y); } }, 600);
   }).catch(() => {}).finally(() => { verBusy--; pumpVersions(); });
 }
 let previewT = 0;
@@ -501,10 +505,10 @@ document.addEventListener('click', async e => {
 function openShow(g, sourceId, auto = false){
   state.current = g; state.tab = 'setlist'; state.allReviews = false; state.recOpen = false;
   if (auto){ document.querySelectorAll('.show').forEach(b => b.setAttribute('aria-current', b.dataset.date === keyOf(g))); loadSource(sourceId || g.sources[0].identifier); return; }
-  if (mq.matches && !document.body.classList.contains('viewing')){ listScroll = window.scrollY; history.pushState({ tr: 'show' }, ''); nav.show = true; }
+  if (mq.matches && !document.body.classList.contains('viewing')){ listScroll = getY(); history.pushState({ tr: 'show' }, ''); nav.show = true; }
   document.body.classList.add('viewing'); applyShrink(); window.relayoutWord && window.relayoutWord();
   document.querySelectorAll('.show').forEach(b => b.setAttribute('aria-current', b.dataset.date === keyOf(g)));
-  if (matchMedia('(max-width: 900px)').matches) window.scrollTo(0, 0);
+  if (matchMedia('(max-width: 900px)').matches) setY(0);
   loadSource(sourceId && g.sources.some(s => s.identifier === sourceId) ? sourceId : g.sources[0].identifier);
 }
 async function loadSource(id){
@@ -1433,7 +1437,7 @@ async function openTop50(){
   state.sort = 'rating'; $('#sort').value = 'rating';
   markDial(); renderList(); haptic();
   if (document.body.classList.contains('viewing') && mq.matches) closeDetail();
-  window.scrollTo({ top: 0 });
+  setY(0);
   track('top50_list');
 }
 $('#top50Btn').onclick = () => openTop50();
@@ -1455,7 +1459,7 @@ let listScroll = 0;
 function hideDetail(){
   nav.show = false;
   document.body.classList.remove('viewing'); applyShrink(); window.relayoutWord && window.relayoutWord();
-  requestAnimationFrame(() => { window.scrollTo(0, listScroll); markDial(); });
+  requestAnimationFrame(() => { setY(listScroll); markDial(); });
 }
 function closeDetail(){ if (nav.show) history.back(); else hideDetail(); }
 function openSheet(){
@@ -2447,7 +2451,7 @@ function goHome(){
   history.replaceState(null, '', location.pathname);
   if (state.mode !== 'year') loadYear(state.year); else { renderList(); markDial(); }
   renderDetail(); fillSotd();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setY(0, true);
 }
 $('#homeLink').addEventListener('click', e => { e.preventDefault(); goHome(); haptic(); });
 
@@ -2487,7 +2491,7 @@ if (IOS && !navigator.standalone && !matchMedia('(display-mode: standalone)').ma
 
 const topEl = $('.top');
 function applyShrink(){
-  const p = Math.min(1, Math.max(0, window.scrollY / (mq.matches ? 90 : 140)));
+  const p = Math.min(1, Math.max(0, getY() / (mq.matches ? 90 : 140)));
   topEl.style.setProperty('--shrink', p.toFixed(3));
   topEl.classList.toggle('shrunk', p > .6 || document.body.classList.contains('viewing'));
 }
@@ -2500,10 +2504,11 @@ function measureHeader(){
 // keep the last song row clear of the player bar
 function measurePlayer(){ document.documentElement.style.setProperty('--pbar', ($('#player').offsetHeight + 18) + 'px'); }
 addEventListener('scroll', applyShrink, { passive: true });
+$('#page').addEventListener('scroll', applyShrink, { passive: true });
 addEventListener('resize', () => { measureHeader(); measurePlayer(); });
 if (document.fonts) document.fonts.ready.then(() => { measureHeader(); measurePlayer(); });
 setTimeout(() => { measureHeader(); measurePlayer(); }, 0);
-$('#hdrSearch').onclick = () => { window.scrollTo({ top: 0 }); document.body.classList.add('searching'); haptic(); setTimeout(() => $('#songq').focus(), 60); };
+$('#hdrSearch').onclick = () => { setY(0); document.body.classList.add('searching'); haptic(); setTimeout(() => $('#songq').focus(), 60); };
 
 setInterval(() => { if (!state.casting && state.queue && document.body.classList.contains('playing') === audio.paused) syncPlay(); }, 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden){ syncPlay(); onTime(); } });
